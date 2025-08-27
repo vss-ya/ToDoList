@@ -5,11 +5,11 @@
 //  Created by vs on 27.08.2025.
 //
 
-// Core/Storage/TaskRepository.swift
 import CoreData
 
 protocol TaskRepositoryProtocol {
-    func fetchAllTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void)
+    func pullTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void)
+    func fetchTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void)
     func saveTasks(_ dtos: [TaskDTO], completion: @escaping (Result<Void, Error>) -> Void)
     func createTask(title: String, description: String?, completion: @escaping (Result<TaskEntity, Error>) -> Void)
     func updateTask(_ task: TaskEntity, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void)
@@ -27,7 +27,24 @@ final class TaskRepository: TaskRepositoryProtocol {
         self.taskAPI = taskAPI
     }
     
-    func fetchAllTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void) {
+    func pullTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void) {
+        taskAPI.fetchTasks { [weak self] result in
+            switch result {
+            case .success(let dtos):
+                self?.saveTasks(dtos) { saveResult in
+                    if case .failure(let error) = saveResult {
+                        print("Failed to save initial data: \(error)")
+                    }
+                    self?.fetchTasks(completion: completion)
+                }
+            case .failure(let error):
+                print("Failed to fetch initial data: \(error)")
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func fetchTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
             let request = TaskEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
@@ -49,14 +66,12 @@ final class TaskRepository: TaskRepositoryProtocol {
                     request.predicate = NSPredicate(format: "id == %d", dto.id)
                     
                     let task = try context.fetch(request).first ?? TaskEntity(context: context)
-                    task.id = Int64(dto.id)
-                    task.title = dto.title
-                    task.isCompleted = dto.completed
-                    task.creationDate = Date()
                     
-                    if task.taskDescription == nil {
-                        task.taskDescription = ""
-                    }
+                    task.creationDate = Date()
+                    task.id = Int64(dto.id)
+                    task.isCompleted = dto.completed
+                    task.taskDescription = dto.todo
+                    task.title = "# \(dto.id)"
                 }
                 
                 try context.save()

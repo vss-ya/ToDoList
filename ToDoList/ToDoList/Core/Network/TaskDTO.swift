@@ -9,7 +9,7 @@ import Foundation
 
 struct TaskDTO: Decodable {
     let id: Int
-    let title: String
+    let todo: String
     let completed: Bool
-    let userId: Int?
+    let userId: Int
 }
