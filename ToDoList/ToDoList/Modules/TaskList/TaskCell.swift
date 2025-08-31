@@ -19,8 +19,8 @@ final class TaskCell: UITableViewCell {
     
     private let descriptionLabel: UILabel = {
         let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.textColor = .gray
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = .lightGray
         label.numberOfLines = 2
         return label
     }()
@@ -34,10 +34,30 @@ final class TaskCell: UITableViewCell {
     
     private let completionButton: UIButton = {
         let button = UIButton()
-        button.setImage(UIImage(systemName: "circle"), for: .normal)
-        button.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
-        button.tintColor = .systemBlue
+        
+        button.setImage(
+            UIImage(systemName: "circle"),
+            for: .normal
+        )
+        button.setImage(
+            UIImage(systemName: "checkmark.circle"),
+            for: .selected
+        )
+        
+        var buttonConfiguration = UIButton.Configuration.plain()
+        buttonConfiguration.imagePadding = .zero
+        buttonConfiguration.baseBackgroundColor = .clear
+        buttonConfiguration.background.imageContentMode = .scaleAspectFill
+        button.configuration = buttonConfiguration
+        
         return button
+    }()
+    
+    private let contentStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [])
+        stackView.axis = .vertical
+        stackView.spacing = 6
+        return stackView
     }()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -49,35 +69,41 @@ final class TaskCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        titleLabel.attributedText = nil
+        descriptionLabel.attributedText = nil
+        dateLabel.attributedText = nil
+    }
+    
     private func setupUI() {
+        let selectedView = UIView()
+            selectedView.backgroundColor = .clear // Or any desired color
+        selectedBackgroundView = selectedView
+        
         contentView.addSubview(completionButton)
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(descriptionLabel)
-        contentView.addSubview(dateLabel)
+        contentView.addSubview(contentStackView)
+        
+        contentStackView.addArrangedSubview(titleLabel)
+        contentStackView.addArrangedSubview(descriptionLabel)
+        contentStackView.addArrangedSubview(dateLabel)
         
         completionButton.translatesAutoresizingMaskIntoConstraints = false
+        contentStackView.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            completionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            completionButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            completionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            completionButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
             completionButton.widthAnchor.constraint(equalToConstant: 24),
             completionButton.heightAnchor.constraint(equalToConstant: 24),
             
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            titleLabel.leadingAnchor.constraint(equalTo: completionButton.trailingAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            descriptionLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            
-            dateLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 4),
-            dateLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            dateLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            dateLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
+            contentStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            contentStackView.leadingAnchor.constraint(equalTo: completionButton.trailingAnchor, constant: 8),
+            contentStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            contentStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
         
         completionButton.addTarget(self, action: #selector(toggleCompletion), for: .touchUpInside)
@@ -88,25 +114,28 @@ final class TaskCell: UITableViewCell {
     }
     
     func configure(with task: TaskModel) {
+        let dateFormatter: DateFormatter = {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yy"
+            return formatter
+        }()
+        
         titleLabel.text = task.title
         descriptionLabel.text = task.taskDescription
-        dateLabel.text = DateFormatter.localizedString(
-            from: task.creationDate,
-            dateStyle: .short,
-            timeStyle: .short
-        )
+        dateLabel.text = dateFormatter.string(from: task.creationDate)
         
         completionButton.isSelected = task.isCompleted
         
         if task.isCompleted {
-            titleLabel.textColor = .gray
+            titleLabel.textColor = .lightGray
             titleLabel.attributedText = NSAttributedString(
                 string: task.title,
                 attributes: [.strikethroughStyle: NSUnderlineStyle.single.rawValue]
             )
+            descriptionLabel.textColor = .lightGray
         } else {
-            titleLabel.textColor = .black
-            titleLabel.attributedText = nil
+            titleLabel.textColor = UIColor(hex: "#F4F4F4")
+            descriptionLabel.textColor = UIColor(hex: "#F4F4F4")
         }
     }
 }

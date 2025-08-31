@@ -15,6 +15,7 @@ enum TaskDetailModuleBuilder {
         let presenter = TaskDetailPresenter(interactor: interactor, router: router)
         
         viewController.presenter = presenter
+        presenter.view = viewController
         router.viewController = viewController
         
         return viewController
