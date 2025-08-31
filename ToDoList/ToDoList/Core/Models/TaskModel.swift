@@ -9,13 +9,13 @@ import Foundation
 
 public struct TaskModel {
     
-    public var id: Int64
-    public var title: String
-    public var taskDescription: String?
-    public var isCompleted: Bool
-    public var creationDate: Date
+    let id: Int64
+    let title: String
+    let taskDescription: String?
+    let isCompleted: Bool
+    let creationDate: Date
     
-    init(entity: TaskEntity) {
+    init(_ entity: TaskEntity) {
         self.id = entity.id
         self.title = "# \(entity.id)"
         self.taskDescription = entity.taskDescription

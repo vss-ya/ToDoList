@@ -8,13 +8,13 @@
 import CoreData
 
 protocol TaskRepositoryProtocol {
-    func pullTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void)
-    func fetchTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void)
+    func pullTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void)
+    func fetchTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void)
     func saveTasks(_ dtos: [TaskDTO], completion: @escaping (Result<Void, Error>) -> Void)
-    func createTask(title: String, description: String?, completion: @escaping (Result<TaskEntity, Error>) -> Void)
-    func updateTask(_ task: TaskEntity, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void)
-    func deleteTask(_ task: TaskEntity, completion: @escaping (Result<Void, Error>) -> Void)
-    func searchTasks(query: String, completion: @escaping (Result<[TaskEntity], Error>) -> Void)
+    func createTask(title: String, description: String?, completion: @escaping (Result<TaskModel, Error>) -> Void)
+    func updateTask(_ task: TaskModel, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void)
+    func deleteTask(_ task: TaskModel, completion: @escaping (Result<Void, Error>) -> Void)
+    func searchTasks(query: String, completion: @escaping (Result<[TaskModel], Error>) -> Void)
 }
 
 final class TaskRepository: TaskRepositoryProtocol {
@@ -27,7 +27,7 @@ final class TaskRepository: TaskRepositoryProtocol {
         self.taskAPI = taskAPI
     }
     
-    func pullTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void) {
+    func pullTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void) {
         taskAPI.fetchTasks { [weak self] result in
             switch result {
             case .success(let dtos):
@@ -44,14 +44,14 @@ final class TaskRepository: TaskRepositoryProtocol {
         }
     }
     
-    func fetchTasks(completion: @escaping (Result<[TaskEntity], Error>) -> Void) {
+    func fetchTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
             let request = TaskEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
             
             do {
                 let tasks = try context.fetch(request)
-                completion(.success(tasks))
+                completion(.success(tasks.map(TaskModel.init)))
             } catch {
                 completion(.failure(error))
             }
@@ -63,7 +63,7 @@ final class TaskRepository: TaskRepositoryProtocol {
             do {
                 for dto in dtos {
                     let request = TaskEntity.fetchRequest()
-                    request.predicate = NSPredicate(format: "id == %d", dto.id)
+                    request.predicate = NSPredicate(format: "id == %i", dto.id)
                     
                     let task = try context.fetch(request).first ?? TaskEntity(context: context)
                     
@@ -82,7 +82,7 @@ final class TaskRepository: TaskRepositoryProtocol {
         }
     }
     
-    func createTask(title: String, description: String?, completion: @escaping (Result<TaskEntity, Error>) -> Void) {
+    func createTask(title: String, description: String?, completion: @escaping (Result<TaskModel, Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
             let task = TaskEntity(context: context)
             task.id = Int64(Date().timeIntervalSince1970)
@@ -93,52 +93,82 @@ final class TaskRepository: TaskRepositoryProtocol {
             
             do {
                 try context.save()
-                completion(.success(task))
+                completion(.success(TaskModel(task)))
             } catch {
                 completion(.failure(error))
             }
         }
     }
     
-    func updateTask(_ task: TaskEntity, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
+    func updateTask(_ task: TaskModel, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
-            guard let object = try? context.existingObject(with: task.objectID) as? TaskEntity else {
-                completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
-                return
-            }
-            
-            object.title = title
-            object.taskDescription = description
-            object.isCompleted = isCompleted
-            
             do {
+                let request = TaskEntity.fetchRequest()
+                request.predicate = NSPredicate(format: "id == %i", task.id)
+                
+                let object = try context.fetch(request).first ?? TaskEntity(context: context)
+                
+                object.title = title
+                object.taskDescription = description
+                object.isCompleted = isCompleted
+                
                 try context.save()
                 completion(.success(()))
             } catch {
                 completion(.failure(error))
             }
+            
+//            guard let object = try? context.existingObject(with: task.objectID) as? TaskEntity else {
+//                completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
+//                return
+//            }
+//            
+//            object.title = title
+//            object.taskDescription = description
+//            object.isCompleted = isCompleted
+//            
+//            do {
+//                try context.save()
+//                completion(.success(()))
+//            } catch {
+//                completion(.failure(error))
+//            }
         }
     }
     
-    func deleteTask(_ task: TaskEntity, completion: @escaping (Result<Void, Error>) -> Void) {
+    func deleteTask(_ task: TaskModel, completion: @escaping (Result<Void, Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
-            guard let object = try? context.existingObject(with: task.objectID) else {
-                completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
-                return
-            }
-            
-            context.delete(object)
-            
             do {
+                let request = TaskEntity.fetchRequest()
+                request.predicate = NSPredicate(format: "id == %i", task.id)
+                
+                let object = try context.fetch(request).first ?? TaskEntity(context: context)
+                
+                context.delete(object)
+                
                 try context.save()
                 completion(.success(()))
             } catch {
                 completion(.failure(error))
             }
+            
+//            guard let object = try? context.existingObject(with: task.objectID) else {
+//                completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
+//                return
+//            }
+//            
+//            context.delete(object)
+//            
+//            do {
+//                try context.save()
+//                completion(.success(()))
+//            } catch {
+//                completion(.failure(error))
+//            }
         }
     }
     
-    func searchTasks(query: String, completion: @escaping (Result<[TaskEntity], Error>) -> Void) {
+    func searchTasks(query: String, completion: @escaping (Result<[TaskModel], Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
             let request = TaskEntity.fetchRequest()
             request.predicate = NSPredicate(
@@ -149,7 +179,7 @@ final class TaskRepository: TaskRepositoryProtocol {
             
             do {
                 let tasks = try context.fetch(request)
-                completion(.success(tasks))
+                completion(.success(tasks.map(TaskModel.init)))
             } catch {
                 completion(.failure(error))
             }

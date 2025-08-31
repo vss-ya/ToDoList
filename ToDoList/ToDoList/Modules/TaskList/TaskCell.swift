@@ -87,11 +87,11 @@ final class TaskCell: UITableViewCell {
         onToggleCompletion?()
     }
     
-    func configure(with task: TaskEntity) {
+    func configure(with task: TaskModel) {
         titleLabel.text = task.title
         descriptionLabel.text = task.taskDescription
         dateLabel.text = DateFormatter.localizedString(
-            from: task.creationDate ?? Date(),
+            from: task.creationDate,
             dateStyle: .short,
             timeStyle: .short
         )
@@ -101,7 +101,7 @@ final class TaskCell: UITableViewCell {
         if task.isCompleted {
             titleLabel.textColor = .gray
             titleLabel.attributedText = NSAttributedString(
-                string: task.title ?? "",
+                string: task.title,
                 attributes: [.strikethroughStyle: NSUnderlineStyle.single.rawValue]
             )
         } else {

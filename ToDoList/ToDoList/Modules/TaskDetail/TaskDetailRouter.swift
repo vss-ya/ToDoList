@@ -1,19 +1,17 @@
 //
-//  TaskListRouter.swift
+//  TaskDetailRouter.swift
 //  ToDoList
 //
-//  Created by vs on 27.08.2025.
+//  Created by vs on 31.08.2025.
 //
 
-import Foundation
 import UIKit
 
-final class TaskListRouter: TaskListRouterProtocol {
+final class TaskDetailRouter: TaskDetailRouterProtocol {
     weak var viewController: UIViewController?
     
-    func navigateToTaskDetail(_ task: TaskModel?) {
-        let taskDetailVC = TaskDetailModuleBuilder.build(task: task)
-        viewController?.navigationController?.pushViewController(taskDetailVC, animated: true)
+    func didFinish() {
+        viewController?.navigationController?.popViewController(animated: true)
     }
     
     func showError(_ error: Error) {

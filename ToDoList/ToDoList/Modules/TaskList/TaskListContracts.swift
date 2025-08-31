@@ -8,7 +8,7 @@
 import Foundation
 
 protocol TaskListViewProtocol: AnyObject {
-    func showTasks(_ tasks: [TaskEntity])
+    func showTasks(_ tasks: [TaskModel])
     func showError(_ error: Error)
     func showLoading()
     func hideLoading()
@@ -16,28 +16,28 @@ protocol TaskListViewProtocol: AnyObject {
 
 protocol TaskListPresenterProtocol: AnyObject {
     func viewDidLoad()
-    func didSelectTask(_ task: TaskEntity)
+    func didSelectTask(_ task: TaskModel)
     func didTapAddTask()
     func didSearch(query: String)
-    func didDeleteTask(_ task: TaskEntity)
-    func didToggleTaskCompletion(_ task: TaskEntity)
+    func didDeleteTask(_ task: TaskModel)
+    func didToggleTaskCompletion(_ task: TaskModel)
 }
 
 protocol TaskListInteractorProtocol: AnyObject {
     func fetchTasks()
     func searchTasks(query: String)
-    func deleteTask(_ task: TaskEntity)
-    func updateTaskCompletion(_ task: TaskEntity, isCompleted: Bool)
+    func deleteTask(_ task: TaskModel)
+    func updateTaskCompletion(_ task: TaskModel, isCompleted: Bool)
     func loadInitialDataIfNeeded()
 }
 
 protocol TaskListRouterProtocol: AnyObject {
-    func navigateToTaskDetail(_ task: TaskEntity?)
+    func navigateToTaskDetail(_ task: TaskModel?)
     func showError(_ error: Error)
 }
 
 protocol TaskListInteractorOutputProtocol: AnyObject {
-    func didFetchTasks(_ tasks: [TaskEntity])
+    func didFetchTasks(_ tasks: [TaskModel])
     func didFailFetchingTasks(_ error: Error)
     func didDeleteTask()
     func didFailDeletingTask(_ error: Error)

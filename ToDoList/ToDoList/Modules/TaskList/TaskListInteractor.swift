@@ -44,7 +44,7 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         }
     }
     
-    func deleteTask(_ task: TaskEntity) {
+    func deleteTask(_ task: TaskModel) {
         taskRepository.deleteTask(task) { [weak self] result in
             switch result {
             case .success:
@@ -55,10 +55,10 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         }
     }
     
-    func updateTaskCompletion(_ task: TaskEntity, isCompleted: Bool) {
+    func updateTaskCompletion(_ task: TaskModel, isCompleted: Bool) {
         taskRepository.updateTask(
             task,
-            title: task.title ?? "",
+            title: task.title,
             description: task.taskDescription,
             isCompleted: isCompleted
         ) { [weak self] result in

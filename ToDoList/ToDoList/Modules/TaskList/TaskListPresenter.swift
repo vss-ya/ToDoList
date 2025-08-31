@@ -12,7 +12,7 @@ final class TaskListPresenter: TaskListPresenterProtocol {
     var interactor: TaskListInteractorProtocol
     var router: TaskListRouterProtocol
     
-    private var tasks: [TaskEntity] = []
+    private var tasks: [TaskModel] = []
     
     deinit {
         print("TaskListPresenter deinit")
@@ -28,7 +28,7 @@ final class TaskListPresenter: TaskListPresenterProtocol {
         interactor.loadInitialDataIfNeeded()
     }
     
-    func didSelectTask(_ task: TaskEntity) {
+    func didSelectTask(_ task: TaskModel) {
         router.navigateToTaskDetail(task)
     }
     
@@ -41,20 +41,21 @@ final class TaskListPresenter: TaskListPresenterProtocol {
         interactor.searchTasks(query: query)
     }
     
-    func didDeleteTask(_ task: TaskEntity) {
+    func didDeleteTask(_ task: TaskModel) {
         view?.showLoading()
         interactor.deleteTask(task)
     }
     
-    func didToggleTaskCompletion(_ task: TaskEntity) {
+    func didToggleTaskCompletion(_ task: TaskModel) {
         view?.showLoading()
         interactor.updateTaskCompletion(task, isCompleted: !task.isCompleted)
     }
 }
 
 extension TaskListPresenter: TaskListInteractorOutputProtocol {
-    func didFetchTasks(_ tasks: [TaskEntity]) {
-        DispatchQueue.main.async {
+    func didFetchTasks(_ tasks: [TaskModel]) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
             self.tasks = tasks
             self.view?.hideLoading()
             self.view?.showTasks(tasks)
@@ -62,8 +63,11 @@ extension TaskListPresenter: TaskListInteractorOutputProtocol {
     }
     
     func didFailFetchingTasks(_ error: Error) {
-        view?.hideLoading()
-        router.showError(error)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            view?.hideLoading()
+            router.showError(error)
+        }
     }
     
     func didDeleteTask() {
@@ -71,8 +75,11 @@ extension TaskListPresenter: TaskListInteractorOutputProtocol {
     }
     
     func didFailDeletingTask(_ error: Error) {
-        view?.hideLoading()
-        router.showError(error)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            view?.hideLoading()
+            router.showError(error)
+        }
     }
     
     func didUpdateTask() {
@@ -80,7 +87,10 @@ extension TaskListPresenter: TaskListInteractorOutputProtocol {
     }
     
     func didFailUpdatingTask(_ error: Error) {
-        view?.hideLoading()
-        router.showError(error)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            view?.hideLoading()
+            router.showError(error)
+        }
     }
 }

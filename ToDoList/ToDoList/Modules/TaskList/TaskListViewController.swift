@@ -13,7 +13,7 @@ final class TaskListViewController: UIViewController {
     private let tableView = UITableView()
     private let searchBar = UISearchBar()
     private let activityIndicator = UIActivityIndicatorView(style: .large)
-    private var tasks: [TaskEntity] = []
+    private var tasks: [TaskModel] = []
     
     deinit {
         print("TaskListViewController deinit")
@@ -32,7 +32,6 @@ final class TaskListViewController: UIViewController {
         setupSearchBar()
         setupTableView()
         setupActivityIndicator()
-        setupNavigationBar()
     }
     
     private func setupSearchBar() {
@@ -51,6 +50,7 @@ final class TaskListViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(TaskCell.self, forCellReuseIdentifier: "TaskCell")
+        tableView.separatorInset = .init(top: 0, left: 20, bottom: 0, right: 20)
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -70,21 +70,13 @@ final class TaskListViewController: UIViewController {
         ])
     }
     
-    private func setupNavigationBar() {
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            barButtonSystemItem: .add,
-            target: self,
-            action: #selector(addButtonTapped)
-        )
-    }
-    
     @objc private func addButtonTapped() {
         presenter.didTapAddTask()
     }
 }
 
 extension TaskListViewController: TaskListViewProtocol {
-    func showTasks(_ tasks: [TaskEntity]) {
+    func showTasks(_ tasks: [TaskModel]) {
         self.tasks = tasks
         tableView.reloadData()
     }

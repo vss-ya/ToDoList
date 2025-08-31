@@ -9,7 +9,7 @@ import CoreData
 
 protocol CoreDataStackProtocol {
     var viewContext: NSManagedObjectContext { get }
-    func saveContext()
+//    func saveContext()
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void)
 }
 
@@ -31,15 +31,15 @@ final class CoreDataStack: CoreDataStackProtocol {
         persistentContainer.viewContext
     }
     
-    func saveContext() {
-        if viewContext.hasChanges {
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error saving context: \(error)")
-            }
-        }
-    }
+//    func saveContext() {
+//        if viewContext.hasChanges {
+//            do {
+//                try viewContext.save()
+//            } catch {
+//                print("Error saving context: \(error)")
+//            }
+//        }
+//    }
     
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         persistentContainer.performBackgroundTask(block)
