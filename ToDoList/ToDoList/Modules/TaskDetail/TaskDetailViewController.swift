@@ -115,27 +115,18 @@ extension TaskDetailViewController {
 extension TaskDetailViewController: TaskDetailViewProtocol {
     
     func showTask(_ task: TaskModel) {
-        let dateFormatter: DateFormatter = {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/yy"
-            return formatter
-        }()
-        
         titleTextField.text = task.title
-        dateLabel.text = dateFormatter.string(from: task.creationDate)
+        dateLabel.text = DateFormatterHelper.ddMMyyString(from: task.creationDate)
         descriptionTextView.text = task.taskDescription
         
         updateDescriptionPlaceholder()
     }
     
     func showError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "Ошибка",
-            message: error.localizedDescription,
-            preferredStyle: .alert
+        present(
+            AlertFactory.makeDefaultAlertError(error: error),
+            animated: true
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
     
 }

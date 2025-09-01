@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class TaskDetailInteractor: TaskDetailInteractorProtocol {
+final class TaskDetailInteractor {
     
     private let task: TaskModel?
     private let taskRepository: TaskRepositoryProtocol
@@ -15,6 +15,19 @@ final class TaskDetailInteractor: TaskDetailInteractorProtocol {
     init(task: TaskModel?, taskRepository: TaskRepositoryProtocol = TaskRepository()) {
         self.task = task
         self.taskRepository = taskRepository
+    }
+    
+}
+
+// MARK: - TaskDetailInteractorProtocol
+
+extension TaskDetailInteractor: TaskDetailInteractorProtocol {
+    
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let taskEntityNotFound = "TaskEntityNotFound"
+        static let taskEntityNotFoundCode = 404
     }
     
     func fetchTask() -> TaskModel? {
@@ -34,7 +47,10 @@ final class TaskDetailInteractor: TaskDetailInteractorProtocol {
     
     func updateTask(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let task = task else {
-            completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
+            completion(.failure(NSError(
+                domain: Constants.taskEntityNotFound,
+                code: Constants.taskEntityNotFoundCode
+            )))
             return
         }
         

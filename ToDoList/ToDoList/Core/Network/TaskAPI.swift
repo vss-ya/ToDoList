@@ -11,7 +11,7 @@ protocol TaskAPIProtocol {
     func fetchTasks(completion: @escaping (Result<[TaskDTO], Error>) -> Void)
 }
 
-final class TaskAPI: TaskAPIProtocol {
+final class TaskAPI {
     
     private let client: APIClientProtocol
     private let baseURL = URL(string: String.apiEndpoint)!
@@ -19,6 +19,12 @@ final class TaskAPI: TaskAPIProtocol {
     init(client: APIClientProtocol = APIClient()) {
         self.client = client
     }
+    
+}
+
+// MARK: - TaskAPIProtocol
+
+extension TaskAPI: TaskAPIProtocol {
     
     func fetchTasks(completion: @escaping (Result<[TaskDTO], Error>) -> Void) {
         fetchTaskList { result in

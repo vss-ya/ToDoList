@@ -9,6 +9,12 @@ import Foundation
 
 final class TaskListInteractor: TaskListInteractorProtocol {
     
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let hasLoadedOnLaunchKey = "hasLoadedOnLaunch"
+    }
+    
     private let taskRepository: TaskRepositoryProtocol
     private let userDefaults: UserDefaults
     weak var presenter: TaskListInteractorOutputProtocol?
@@ -73,13 +79,13 @@ final class TaskListInteractor: TaskListInteractorProtocol {
     }
     
     func loadInitialDataIfNeeded() {
-        let hasLoadedOnLaunch  = userDefaults.bool(forKey: "hasLoadedOnLaunch")
+        let hasLoadedOnLaunch  = userDefaults.bool(forKey: Constants.hasLoadedOnLaunchKey)
         if !hasLoadedOnLaunch {
             taskRepository.pullTasks { [weak self] result in
                 guard let self else { return }
                 switch result {
                 case .success(let tasks):
-                    userDefaults.set(true, forKey: "hasLoadedOnLaunch")
+                    userDefaults.set(true, forKey: Constants.hasLoadedOnLaunchKey)
                     presenter?.didFetchTasks(tasks)
                 case .failure(let error):
                     presenter?.didFailFetchingTasks(error)

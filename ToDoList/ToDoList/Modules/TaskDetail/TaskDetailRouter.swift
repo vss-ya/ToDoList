@@ -7,7 +7,7 @@
 
 import UIKit
 
-final class TaskDetailRouter: TaskDetailRouterProtocol {
+final class TaskDetailRouter {
     
     weak var viewController: UIViewController?
     
@@ -15,14 +15,18 @@ final class TaskDetailRouter: TaskDetailRouterProtocol {
         viewController?.navigationController?.popViewController(animated: true)
     }
     
+}
+
+// MARK: - TaskDetailRouterProtocol
+
+extension TaskDetailRouter: TaskDetailRouterProtocol {
+ 
     func showError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "Error",
-            message: error.localizedDescription,
-            preferredStyle: .alert
+        viewController?.present(
+            AlertFactory.makeDefaultAlertError(error: error),
+            animated: true
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        viewController?.present(alert, animated: true)
     }
+    
     
 }

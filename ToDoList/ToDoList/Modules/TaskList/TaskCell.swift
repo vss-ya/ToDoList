@@ -9,61 +9,29 @@ import UIKit
 
 final class TaskCell: UITableViewCell {
     
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let cellId = "TaskCell"
+        static let textColorHex = "#F4F4F4"
+        static let hasLoadedOnLaunchKey = "hasLoadedOnLaunch"
+        static let circle = "circle"
+        static let checkmarkCircle = "checkmark.circle"
+    }
+    
+    static let identifier = Constants.cellId
+    
     var onToggleCompletion: (() -> Void)?
     
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
-        label.numberOfLines = 1
-        return label
-    }()
-    
-    private let descriptionLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 12)
-        label.textColor = .lightGray
-        label.numberOfLines = 2
-        return label
-    }()
-    
-    private let dateLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 12)
-        label.textColor = .lightGray
-        return label
-    }()
-    
-    private let completionButton: UIButton = {
-        let button = UIButton()
-        
-        button.setImage(
-            UIImage(systemName: "circle"),
-            for: .normal
-        )
-        button.setImage(
-            UIImage(systemName: "checkmark.circle"),
-            for: .selected
-        )
-        
-        var buttonConfiguration = UIButton.Configuration.plain()
-        buttonConfiguration.imagePadding = .zero
-        buttonConfiguration.baseBackgroundColor = .clear
-        buttonConfiguration.background.imageContentMode = .scaleAspectFill
-        button.configuration = buttonConfiguration
-        
-        return button
-    }()
-    
-    private let contentStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [])
-        stackView.axis = .vertical
-        stackView.spacing = 6
-        return stackView
-    }()
+    private let titleLabel = UILabel()
+    private let descriptionLabel = UILabel()
+    private let dateLabel = UILabel()
+    private let completionButton = UIButton()
+    private let contentStackView = UIStackView()
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupUI()
+        setup()
     }
     
     required init?(coder: NSCoder) {
@@ -75,55 +43,13 @@ final class TaskCell: UITableViewCell {
         titleLabel.attributedText = nil
         descriptionLabel.attributedText = nil
         dateLabel.attributedText = nil
-    }
-    
-    private func setupUI() {
-        let selectedView = UIView()
-            selectedView.backgroundColor = .clear // Or any desired color
-        selectedBackgroundView = selectedView
-        
-        contentView.addSubview(completionButton)
-        contentView.addSubview(contentStackView)
-        
-        contentStackView.addArrangedSubview(titleLabel)
-        contentStackView.addArrangedSubview(descriptionLabel)
-        contentStackView.addArrangedSubview(dateLabel)
-        
-        completionButton.translatesAutoresizingMaskIntoConstraints = false
-        contentStackView.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
-        dateLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            completionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
-            completionButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            completionButton.widthAnchor.constraint(equalToConstant: 24),
-            completionButton.heightAnchor.constraint(equalToConstant: 24),
-            
-            contentStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
-            contentStackView.leadingAnchor.constraint(equalTo: completionButton.trailingAnchor, constant: 8),
-            contentStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            contentStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
-        ])
-        
-        completionButton.addTarget(self, action: #selector(toggleCompletion), for: .touchUpInside)
-    }
-    
-    @objc private func toggleCompletion() {
-        onToggleCompletion?()
+        onToggleCompletion = nil
     }
     
     func configure(with task: TaskModel) {
-        let dateFormatter: DateFormatter = {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/yy"
-            return formatter
-        }()
-        
         titleLabel.text = task.title
         descriptionLabel.text = task.taskDescription
-        dateLabel.text = dateFormatter.string(from: task.creationDate)
+        dateLabel.text = DateFormatterHelper.ddMMyyString(from: task.creationDate)
         
         completionButton.isSelected = task.isCompleted
         
@@ -135,9 +61,114 @@ final class TaskCell: UITableViewCell {
             )
             descriptionLabel.textColor = .lightGray
         } else {
-            titleLabel.textColor = UIColor(hex: "#F4F4F4")
-            descriptionLabel.textColor = UIColor(hex: "#F4F4F4")
+            titleLabel.textColor = UIColor(hex: Constants.textColorHex)
+            descriptionLabel.textColor = UIColor(hex: Constants.textColorHex)
         }
+    }
+    
+}
+
+// MARK: Setup & Helpers
+
+extension TaskCell {
+    
+    func setup() {
+        setupUI()
+        setupConstraints()
+        
+        completionButton.addAction(
+            UIAction(handler: { [weak self] _ in
+                self?.onToggleCompletion?()
+            }),
+            for: .touchUpInside
+        )
+    }
+    
+    func setupUI() {
+        let selectedView = UIView()
+        selectedView.backgroundColor = .clear
+        selectedBackgroundView = selectedView
+        
+        setupCompletionButton()
+        setupContentStackView()
+        setupTitleLabel()
+        setupDescriptionLabel()
+        setupDateLabel()
+    }
+    
+    func setupCompletionButton() {
+        let button = completionButton
+        button.setImage(
+            UIImage(systemName: Constants.circle),
+            for: .normal
+        )
+        button.setImage(
+            UIImage(systemName: Constants.checkmarkCircle),
+            for: .selected
+        )
+        var configuration = UIButton.Configuration.plain()
+        configuration.imagePadding = .zero
+        configuration.baseBackgroundColor = .clear
+        configuration.background.imageContentMode = .scaleAspectFill
+        button.configuration = configuration
+        completionButton.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(button)
+    }
+    
+    func setupContentStackView() {
+        let stackView = contentStackView
+        stackView.axis = .vertical
+        stackView.spacing = 6
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(stackView)
+    }
+    
+    func setupTitleLabel() {
+        let label = titleLabel
+        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.numberOfLines = 1
+        label.translatesAutoresizingMaskIntoConstraints = false
+        contentStackView.addArrangedSubview(label)
+    }
+    
+    func setupDescriptionLabel() {
+        let label = descriptionLabel
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = .lightGray
+        label.numberOfLines = 2
+        label.translatesAutoresizingMaskIntoConstraints = false
+        contentStackView.addArrangedSubview(label)
+    }
+    
+    func setupDateLabel() {
+        let label = dateLabel
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.textColor = .lightGray
+        label.translatesAutoresizingMaskIntoConstraints = false
+        contentStackView.addArrangedSubview(label)
+    }
+    
+    func setupConstraints() {
+        setupCompletionButtonConstraints()
+        setupContentStackViewConstraints()
+    }
+    
+    func setupCompletionButtonConstraints() {
+        NSLayoutConstraint.activate([
+            completionButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            completionButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            completionButton.widthAnchor.constraint(equalToConstant: 24),
+            completionButton.heightAnchor.constraint(equalToConstant: 24),
+        ])
+    }
+    
+    func setupContentStackViewConstraints() {
+        NSLayoutConstraint.activate([
+            contentStackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
+            contentStackView.leadingAnchor.constraint(equalTo: completionButton.trailingAnchor, constant: 8),
+            contentStackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            contentStackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
+        ])
     }
     
 }

@@ -17,7 +17,18 @@ protocol TaskRepositoryProtocol {
     func searchTasks(query: String, completion: @escaping (Result<[TaskModel], Error>) -> Void)
 }
 
-final class TaskRepository: TaskRepositoryProtocol {
+final class TaskRepository {
+    
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let failedToSaveInitialDataFormat = "Failed to save initial data: %@"
+        static let failedToFetchInitialDataFormat = "Failed to fetch initial data: %@"
+        
+        static let creationDateKey = "creationDate"
+        static let idEqPredicateFormat = "id == %i"
+        static let searchPredicateFormat: String = "title CONTAINS[cd] %@ OR taskDescription CONTAINS[cd] %@"
+    }
     
     private let coreDataStack: CoreDataStackProtocol
     private let taskAPI: TaskAPIProtocol
@@ -28,18 +39,30 @@ final class TaskRepository: TaskRepositoryProtocol {
         self.taskAPI = taskAPI
     }
     
+}
+
+// MARK: - TaskRepositoryProtocol
+
+extension TaskRepository: TaskRepositoryProtocol{
+    
     func pullTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void) {
         taskAPI.fetchTasks { [weak self] result in
             switch result {
             case .success(let dtos):
                 self?.saveTasks(dtos) { saveResult in
                     if case .failure(let error) = saveResult {
-                        print("Failed to save initial data: \(error)")
+                        print(String(
+                            format: Constants.failedToSaveInitialDataFormat,
+                            error.localizedDescription
+                        ))
                     }
                     self?.fetchTasks(completion: completion)
                 }
             case .failure(let error):
-                print("Failed to fetch initial data: \(error)")
+                print(String(
+                    format: Constants.failedToFetchInitialDataFormat,
+                    error.localizedDescription
+                ))
                 completion(.failure(error))
             }
         }
@@ -48,7 +71,9 @@ final class TaskRepository: TaskRepositoryProtocol {
     func fetchTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
             let request = TaskEntity.fetchRequest()
-            request.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+            request.sortDescriptors = [NSSortDescriptor(
+                key: Constants.creationDateKey, ascending: false
+            )]
             
             do {
                 let tasks = try context.fetch(request)
@@ -67,7 +92,7 @@ final class TaskRepository: TaskRepositoryProtocol {
             do {
                 for dto in dtos {
                     let request = TaskEntity.fetchRequest()
-                    request.predicate = NSPredicate(format: "id == %i", dto.id)
+                    request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, dto.id)
                     
                     let task = try context.fetch(request).first ?? TaskEntity(context: context)
                     
@@ -118,7 +143,7 @@ final class TaskRepository: TaskRepositoryProtocol {
         coreDataStack.performBackgroundTask { context in
             do {
                 let request = TaskEntity.fetchRequest()
-                request.predicate = NSPredicate(format: "id == %i", task.id)
+                request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, task.id)
                 
                 let object = try context.fetch(request).first ?? TaskEntity(context: context)
                 
@@ -142,7 +167,7 @@ final class TaskRepository: TaskRepositoryProtocol {
         coreDataStack.performBackgroundTask { context in
             do {
                 let request = TaskEntity.fetchRequest()
-                request.predicate = NSPredicate(format: "id == %i", task.id)
+                request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, task.id)
                 
                 let object = try context.fetch(request).first ?? TaskEntity(context: context)
                 
@@ -163,10 +188,12 @@ final class TaskRepository: TaskRepositoryProtocol {
         coreDataStack.performBackgroundTask { context in
             let request = TaskEntity.fetchRequest()
             request.predicate = NSPredicate(
-                format: "title CONTAINS[cd] %@ OR taskDescription CONTAINS[cd] %@",
+                format: Constants.searchPredicateFormat,
                 query, query
             )
-            request.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+            request.sortDescriptors = [NSSortDescriptor(
+                key: Constants.creationDateKey, ascending: false
+            )]
             
             do {
                 let tasks = try context.fetch(request)

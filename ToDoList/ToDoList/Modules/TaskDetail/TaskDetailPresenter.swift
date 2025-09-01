@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class TaskDetailPresenter: TaskDetailPresenterProtocol {
+final class TaskDetailPresenter {
     
     weak var view: TaskDetailViewProtocol?
     var interactor: TaskDetailInteractorProtocol
@@ -18,6 +18,20 @@ final class TaskDetailPresenter: TaskDetailPresenterProtocol {
         self.router = router
     }
     
+}
+
+// MARK: - TaskDetailPresenterProtocol
+
+extension TaskDetailPresenter: TaskDetailPresenterProtocol {
+    
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let validation = "TaskEntityNotFound"
+        static let validationCode = 400
+        static let validationMessage = "Введите название задачи"
+    }
+    
     func viewDidLoad() {
         if let task = interactor.fetchTask() {
             view?.showTask(task)
@@ -26,7 +40,11 @@ final class TaskDetailPresenter: TaskDetailPresenterProtocol {
     
     func didSaveTask(title: String, description: String?) {
         guard !title.isEmpty else {
-            router.showError(NSError(domain: "Validation", code: 400, userInfo: [NSLocalizedDescriptionKey: "Введите название задачи"]))
+            router.showError(NSError(
+                domain: Constants.validation,
+                code: Constants.validationCode,
+                userInfo: [NSLocalizedDescriptionKey: Constants.validationMessage]
+            ))
             return
         }
         

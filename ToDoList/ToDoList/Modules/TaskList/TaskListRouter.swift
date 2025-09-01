@@ -8,9 +8,15 @@
 import Foundation
 import UIKit
 
-final class TaskListRouter: TaskListRouterProtocol {
+final class TaskListRouter {
     
     weak var viewController: UIViewController?
+    
+}
+
+// MARK: - TaskListRouterProtocol
+
+extension TaskListRouter: TaskListRouterProtocol {
     
     func navigateToTaskDetail(_ task: TaskModel?) {
         let taskDetailVC = TaskDetailModuleBuilder.build(task: task)
@@ -18,13 +24,10 @@ final class TaskListRouter: TaskListRouterProtocol {
     }
     
     func showError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "Error",
-            message: error.localizedDescription,
-            preferredStyle: .alert
+        viewController?.present(
+            AlertFactory.makeDefaultAlertError(error: error),
+            animated: true
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        viewController?.present(alert, animated: true)
     }
     
 }

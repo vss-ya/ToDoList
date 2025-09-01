@@ -8,18 +8,26 @@
 import Foundation
 
 protocol APIClientProtocol {
-    func request<T: Decodable>(_ endpoint: URL,
-                             method: HTTPMethod,
-                             completion: @escaping (Result<T, Error>) -> Void)
+    func request<T: Decodable>(
+        _ endpoint: URL,
+        method: HTTPMethod,
+        completion: @escaping (Result<T, Error>) -> Void
+    )
 }
 
-final class APIClient: APIClientProtocol {
+final class APIClient {
     
     private let session: URLSession
     
     init(session: URLSession = .shared) {
         self.session = session
     }
+    
+}
+
+// MARK: - APIClientProtocol
+
+extension APIClient: APIClientProtocol {
     
     func request<T: Decodable>(
         _ endpoint: URL,

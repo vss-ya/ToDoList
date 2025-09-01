@@ -9,6 +9,16 @@ import UIKit
 
 final class TaskListViewController: UIViewController {
     
+    // MARK: - Constants
+    
+    private enum Constants {
+        static let bottomViewHex = "#272729"
+        static let editImage = UIImage(systemName: "checkmark.circle")
+        static let shareTypeIdentifier = "public.utf8-plain-text"
+        static let shareTaskError = "Error share task"
+        static let encodingErrorFormat = "Error encoding JSON: %@"
+    }
+    
     var presenter: TaskListPresenterProtocol!
     
     private let tableView = UITableView()
@@ -59,7 +69,7 @@ extension TaskListViewController {
     
     private func setupSearchBar() {
         searchBar.delegate = self
-        searchBar.placeholder = "Search"
+        searchBar.placeholder = .taskSearch
         searchBar.searchBarStyle = .minimal
         view.addSubview(searchBar)
     }
@@ -67,7 +77,7 @@ extension TaskListViewController {
     private func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(TaskCell.self, forCellReuseIdentifier: "TaskCell")
+        tableView.register(TaskCell.self, forCellReuseIdentifier: TaskCell.identifier)
         tableView.separatorInset = .init(top: 0, left: 20, bottom: 0, right: 20)
         view.addSubview(tableView)
     }
@@ -77,8 +87,11 @@ extension TaskListViewController {
     }
     
     private func setupBottomView() {
-        selectedTasksLabel.text = "0 Задач"
-        bottomView.backgroundColor = UIColor(hex: "#272729")
+        selectedTasksLabel.text = String(
+            format: String.numberOfCompletedTasksFormat,
+            0
+        )
+        bottomView.backgroundColor = UIColor(hex: Constants.bottomViewHex)
         
         bottomView.translatesAutoresizingMaskIntoConstraints = false
         selectedTasksLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -92,7 +105,7 @@ extension TaskListViewController {
         
         let button = editButton
         button.setImage(
-            UIImage(systemName: "checkmark.circle"),
+            Constants.editImage,
             for: .normal
         )
         
@@ -179,13 +192,10 @@ extension TaskListViewController: TaskListViewProtocol {
     }
     
     func showError(_ error: Error) {
-        let alert = UIAlertController(
-            title: "Ошибка",
-            message: error.localizedDescription,
-            preferredStyle: .alert
+        present(
+            AlertFactory.makeDefaultAlertError(error: error),
+            animated: true
         )
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        present(alert, animated: true)
     }
     
     func showLoading() {
@@ -295,18 +305,18 @@ extension TaskListViewController {
         do {
             let jsonData = try encoder.encode(task)
             guard let jsonString = String(data: jsonData, encoding: .utf8) else {
-                print("Error share task")
+                print(Constants.shareTaskError)
                 return
             }
             let itemProvider = NSItemProvider(
                 item: jsonString as NSString,
-                typeIdentifier: "public.utf8-plain-text"
+                typeIdentifier: Constants.shareTypeIdentifier
             )
             let configuration = UIActivityItemsConfiguration(itemProviders: [itemProvider])
             let shareSheet = UIActivityViewController(activityItemsConfiguration: configuration)
             present(shareSheet, animated:true) {}
         } catch {
-            print("Error encoding JSON: \(error)")
+            print(String(format: Constants.encodingErrorFormat, error.localizedDescription))
         }
     }
     
@@ -314,7 +324,7 @@ extension TaskListViewController {
         _ indexPath: IndexPath
     ) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(
-            withIdentifier: "TaskCell",
+            withIdentifier: TaskCell.identifier,
             for: indexPath
         ) as! TaskCell
         let task = tasks[indexPath.row]
