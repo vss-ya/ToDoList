@@ -1,5 +1,5 @@
 //
-//  ToDoListTests.swift
+//  TaskListPresenterTests.swift
 //  ToDoListTests
 //
 //  Created by vs on 27.08.2025.
@@ -8,29 +8,110 @@
 import XCTest
 @testable import ToDoList
 
-final class ToDoListTests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+final class TaskListPresenterTests: XCTestCase {
+    
+    var presenter: TaskListPresenter!
+    var mockView: MockTaskListView!
+    var mockInteractor: MockTaskListInteractor!
+    var mockRouter: MockTaskListRouter!
+    
+    override func setUp() {
+        super.setUp()
+        mockView = MockTaskListView()
+        mockInteractor = MockTaskListInteractor()
+        mockRouter = MockTaskListRouter()
+        presenter = TaskListPresenter(interactor: mockInteractor, router: mockRouter)
+        presenter.view = mockView
     }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    
+    func testViewDidLoadCallsLoadInitialData() {
+        presenter.viewDidLoad()
+        XCTAssertTrue(mockInteractor.loadInitialDataIfNeededCalled)
     }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
+    
+    func testDidSearchCallsInteractor() {
+        presenter.didTapSearch(query: "test")
+        XCTAssertTrue(mockInteractor.searchTasksCalled)
     }
+    
+}
 
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+class MockTaskListView: TaskListViewProtocol {
+    
+    var showTasksCalled = false
+    var showTaskCompletedCalled = false
+    var showWhoShareWithCalled = false
+    var showErrorCalled = false
+    var showLoadingCalled = false
+    var hideLoadingCalled = false
+    
+    func showTasks(_ tasks: [TaskModel]) {
+        showTasksCalled = true
     }
+    
+    func showTaskCompleted() {
+        showTaskCompletedCalled = true
+    }
+    
+    func showWhoShareWith(_ task: TaskModel) {
+        showWhoShareWithCalled = true
+    }
+    
+    func showError(_ error: Error) {
+        showErrorCalled = true
+    }
+    
+    func showLoading() {
+        showLoadingCalled = true
+    }
+    
+    func hideLoading() {
+        hideLoadingCalled = true
+    }
+    
+}
 
+class MockTaskListInteractor: TaskListInteractorProtocol {
+    
+    var fetchTasksCalled = false
+    var searchTasksCalled = false
+    var deleteTaskCalled = false
+    var updateTaskCompletionCalled = false
+    var loadInitialDataIfNeededCalled = false
+    
+    func fetchTasks() {
+        fetchTasksCalled = true
+    }
+    
+    func searchTasks(query: String) {
+        searchTasksCalled = true
+    }
+    
+    func deleteTask(_ task: TaskModel) {
+        deleteTaskCalled = true
+    }
+    
+    func updateTaskCompletion(_ task: TaskModel, isCompleted: Bool) {
+        updateTaskCompletionCalled = true
+    }
+    
+    func loadInitialDataIfNeeded() {
+        loadInitialDataIfNeededCalled = true
+    }
+    
+}
+
+class MockTaskListRouter: TaskListRouterProtocol {
+    
+    var navigateToTaskDetailCalled = false
+    var showErrorCalled = false
+    
+    func navigateToTaskDetail(_ task: TaskModel?) {
+        navigateToTaskDetailCalled = true
+    }
+    
+    func showError(_ error: Error) {
+        showErrorCalled = true
+    }
+    
 }
