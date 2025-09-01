@@ -37,6 +37,20 @@
 			);
 			target = 573496862E5F3A7000C02B79 /* ToDoList */;
 		};
+		57715A3C2E6639F400969C10 /* Exceptions for "ToDoList" folder in "ToDoListTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/todos.json,
+			);
+			target = 5734969C2E5F3A7200C02B79 /* ToDoListTests */;
+		};
+		57715A3D2E6639F400969C10 /* Exceptions for "ToDoList" folder in "ToDoListUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/todos.json,
+			);
+			target = 573496A62E5F3A7200C02B79 /* ToDoListUITests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +58,8 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				573496AF2E5F3A7200C02B79 /* Exceptions for "ToDoList" folder in "ToDoList" target */,
+				57715A3C2E6639F400969C10 /* Exceptions for "ToDoList" folder in "ToDoListTests" target */,
+				57715A3D2E6639F400969C10 /* Exceptions for "ToDoList" folder in "ToDoListUITests" target */,
 			);
 			path = ToDoList;
 			sourceTree = "<group>";

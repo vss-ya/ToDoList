@@ -45,7 +45,7 @@ class MockTaskListView: TaskListViewProtocol {
     var showLoadingCalled = false
     var hideLoadingCalled = false
     
-    func showTasks(_ tasks: [TaskModel]) {
+    func showTasks(_ tasks: [ToDoModel]) {
         showTasksCalled = true
     }
     
@@ -53,7 +53,7 @@ class MockTaskListView: TaskListViewProtocol {
         showTaskCompletedCalled = true
     }
     
-    func showWhoShareWith(_ task: TaskModel) {
+    func showWhoShareWith(_ task: ToDoModel) {
         showWhoShareWithCalled = true
     }
     
@@ -87,11 +87,11 @@ class MockTaskListInteractor: TaskListInteractorProtocol {
         searchTasksCalled = true
     }
     
-    func deleteTask(_ task: TaskModel) {
+    func deleteTask(_ task: ToDoModel) {
         deleteTaskCalled = true
     }
     
-    func updateTaskCompletion(_ task: TaskModel, isCompleted: Bool) {
+    func updateTaskCompletion(_ task: ToDoModel, isCompleted: Bool) {
         updateTaskCompletionCalled = true
     }
     
@@ -106,7 +106,7 @@ class MockTaskListRouter: TaskListRouterProtocol {
     var navigateToTaskDetailCalled = false
     var showErrorCalled = false
     
-    func navigateToTaskDetail(_ task: TaskModel?) {
+    func navigateToTaskDetail(_ task: ToDoModel?) {
         navigateToTaskDetailCalled = true
     }
     

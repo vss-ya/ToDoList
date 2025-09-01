@@ -7,12 +7,14 @@
 
 import Foundation
 
-final class TaskListInteractor: TaskListInteractorProtocol {
+final class TaskListInteractor {
     
     // MARK: - Constants
     
     private enum Constants {
         static let hasLoadedOnLaunchKey = "hasLoadedOnLaunch"
+        static let jsonLoadError = "Unbale to load JSON from Bundle"
+        static let jsonLoadErrorCode = 404
     }
     
     private let taskRepository: TaskRepositoryProtocol
@@ -24,6 +26,12 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         self.taskRepository = taskRepository
         self.userDefaults = userDefaults
     }
+    
+}
+
+// MARK: - TaskListInteractorProtocol
+
+extension TaskListInteractor: TaskListInteractorProtocol {
     
     func fetchTasks() {
         taskRepository.fetchTasks { [weak self] result in
@@ -51,7 +59,7 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         }
     }
     
-    func deleteTask(_ task: TaskModel) {
+    func deleteTask(_ task: ToDoModel) {
         taskRepository.deleteTask(task) { [weak self] result in
             switch result {
             case .success:
@@ -62,7 +70,7 @@ final class TaskListInteractor: TaskListInteractorProtocol {
         }
     }
     
-    func updateTaskCompletion(_ task: TaskModel, isCompleted: Bool) {
+    func updateTaskCompletion(_ task: ToDoModel, isCompleted: Bool) {
         taskRepository.updateTask(
             task,
             title: task.title,

@@ -18,7 +18,7 @@ final class TaskListRouter {
 
 extension TaskListRouter: TaskListRouterProtocol {
     
-    func navigateToTaskDetail(_ task: TaskModel?) {
+    func navigateToTaskDetail(_ task: ToDoModel?) {
         let taskDetailVC = TaskDetailModuleBuilder.build(task: task)
         viewController?.navigationController?.pushViewController(taskDetailVC, animated: true)
     }

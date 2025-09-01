@@ -27,7 +27,7 @@ final class TaskListViewController: UIViewController {
     private let bottomView = UIView()
     private let selectedTasksLabel = UILabel()
     private let editButton = UIButton()
-    private var tasks: [TaskModel] = []
+    private var tasks: [ToDoModel] = []
     
     deinit {
         print("TaskListViewController deinit")
@@ -44,7 +44,9 @@ final class TaskListViewController: UIViewController {
     
 }
 
-extension TaskListViewController {
+// MARK: - Setup
+
+private extension TaskListViewController {
     
     func setup() {
         setupUI()
@@ -57,7 +59,7 @@ extension TaskListViewController {
         )
     }
     
-    private func setupUI() {
+    func setupUI() {
         title = String.taskTitle
         navigationController?.navigationBar.prefersLargeTitles = true
         
@@ -67,14 +69,14 @@ extension TaskListViewController {
         setupBottomView()
     }
     
-    private func setupSearchBar() {
+    func setupSearchBar() {
         searchBar.delegate = self
         searchBar.placeholder = .taskSearch
         searchBar.searchBarStyle = .minimal
         view.addSubview(searchBar)
     }
     
-    private func setupTableView() {
+    func setupTableView() {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(TaskCell.self, forCellReuseIdentifier: TaskCell.identifier)
@@ -82,11 +84,11 @@ extension TaskListViewController {
         view.addSubview(tableView)
     }
     
-    private func setupActivityIndicator() {
+    func setupActivityIndicator() {
         view.addSubview(activityIndicator)
     }
     
-    private func setupBottomView() {
+    func setupBottomView() {
         selectedTasksLabel.text = String(
             format: String.numberOfCompletedTasksFormat,
             0
@@ -165,7 +167,7 @@ extension TaskListViewController {
         ])
     }
     
-    @objc private func addButtonTapped() {
+    @objc func addButtonTapped() {
         presenter.didTapAddTask()
     }
     
@@ -175,7 +177,7 @@ extension TaskListViewController {
 
 extension TaskListViewController: TaskListViewProtocol {
     
-    func showTasks(_ tasks: [TaskModel]) {
+    func showTasks(_ tasks: [ToDoModel]) {
         self.tasks = tasks
         tableView.reloadData()
     }
@@ -187,7 +189,7 @@ extension TaskListViewController: TaskListViewProtocol {
         )
     }
     
-    func showWhoShareWith(_ task: TaskModel) {
+    func showWhoShareWith(_ task: ToDoModel) {
         shareTask(task)
     }
     
@@ -296,9 +298,9 @@ extension TaskListViewController: UISearchBarDelegate {
 
 // MARK: - Helpers
 
-extension TaskListViewController {
+private extension TaskListViewController {
     
-    private func shareTask(_ task: TaskModel) {
+    func shareTask(_ task: ToDoModel) {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
 
@@ -320,7 +322,7 @@ extension TaskListViewController {
         }
     }
     
-    private func configureCellForRowAt(
+    func configureCellForRowAt(
         _ indexPath: IndexPath
     ) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(
@@ -335,7 +337,7 @@ extension TaskListViewController {
         return cell
     }
     
-    private func menuForRowAt(
+    func menuForRowAt(
         _ indexPath: IndexPath,
         point: CGPoint
     ) -> UIContextMenuConfiguration? {
@@ -375,7 +377,7 @@ extension TaskListViewController {
         return menuConfiguration
     }
     
-    private func preview(
+    func preview(
         for tableView: UITableView,
         contextMenuWithConfiguration configuration: UIContextMenuConfiguration
     ) -> UITargetedPreview? {
@@ -391,7 +393,7 @@ extension TaskListViewController {
         return preview(for: cell)
     }
     
-    private func preview(for cell: UITableViewCell) -> UITargetedPreview? {
+    func preview(for cell: UITableViewCell) -> UITargetedPreview? {
         guard
             let targetCell = cell as? TaskCell,
             let snapshot = targetCell.contentView.snapshotView(

@@ -1,5 +1,5 @@
 //
-//  TaskDTO.swift
+//  ToDoDTO.swift
 //  ToDoList
 //
 //  Created by vs on 27.08.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TaskDTO: Decodable {
+struct ToDoDTO: Decodable {
     let id: Int
     let todo: String
     let completed: Bool

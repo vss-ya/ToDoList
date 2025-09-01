@@ -29,7 +29,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 // MARK: - Setup & Appearance
 
-extension SceneDelegate {
+private extension SceneDelegate {
     
     func setup(_ scene: UIScene) {
         setupAppearance()

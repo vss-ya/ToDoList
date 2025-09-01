@@ -46,7 +46,7 @@ final class TaskCell: UITableViewCell {
         onToggleCompletion = nil
     }
     
-    func configure(with task: TaskModel) {
+    func configure(with task: ToDoModel) {
         titleLabel.text = task.title
         descriptionLabel.text = task.taskDescription
         dateLabel.text = DateFormatterHelper.ddMMyyString(from: task.creationDate)
@@ -70,7 +70,7 @@ final class TaskCell: UITableViewCell {
 
 // MARK: Setup & Helpers
 
-extension TaskCell {
+private extension TaskCell {
     
     func setup() {
         setupUI()

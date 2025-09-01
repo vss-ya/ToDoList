@@ -9,7 +9,7 @@ import UIKit
 
 enum TaskDetailModuleBuilder {
     
-    static func build(task: TaskModel?) -> UIViewController {
+    static func build(task: ToDoModel?) -> UIViewController {
         let viewController = TaskDetailViewController()
         let interactor = TaskDetailInteractor(task: task)
         let router = TaskDetailRouter()

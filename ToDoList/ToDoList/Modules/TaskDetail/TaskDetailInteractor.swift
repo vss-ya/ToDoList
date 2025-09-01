@@ -9,10 +9,10 @@ import Foundation
 
 final class TaskDetailInteractor {
     
-    private let task: TaskModel?
+    private let task: ToDoModel?
     private let taskRepository: TaskRepositoryProtocol
     
-    init(task: TaskModel?, taskRepository: TaskRepositoryProtocol = TaskRepository()) {
+    init(task: ToDoModel?, taskRepository: TaskRepositoryProtocol = TaskRepository()) {
         self.task = task
         self.taskRepository = taskRepository
     }
@@ -26,11 +26,11 @@ extension TaskDetailInteractor: TaskDetailInteractorProtocol {
     // MARK: - Constants
     
     private enum Constants {
-        static let taskEntityNotFound = "TaskEntityNotFound"
-        static let taskEntityNotFoundCode = 404
+        static let ToDoEntityNotFound = "ToDoEntityNotFound"
+        static let ToDoEntityNotFoundCode = 404
     }
     
-    func fetchTask() -> TaskModel? {
+    func fetchTask() -> ToDoModel? {
         task
     }
     
@@ -48,8 +48,8 @@ extension TaskDetailInteractor: TaskDetailInteractorProtocol {
     func updateTask(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let task = task else {
             completion(.failure(NSError(
-                domain: Constants.taskEntityNotFound,
-                code: Constants.taskEntityNotFoundCode
+                domain: Constants.ToDoEntityNotFound,
+                code: Constants.ToDoEntityNotFoundCode
             )))
             return
         }

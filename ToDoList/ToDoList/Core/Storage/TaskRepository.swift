@@ -8,13 +8,13 @@
 import CoreData
 
 protocol TaskRepositoryProtocol {
-    func pullTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void)
-    func fetchTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void)
-    func saveTasks(_ dtos: [TaskDTO], completion: @escaping (Result<Void, Error>) -> Void)
-    func createTask(title: String, description: String?, completion: @escaping (Result<TaskModel, Error>) -> Void)
-    func updateTask(_ task: TaskModel, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void)
-    func deleteTask(_ task: TaskModel, completion: @escaping (Result<Void, Error>) -> Void)
-    func searchTasks(query: String, completion: @escaping (Result<[TaskModel], Error>) -> Void)
+    func pullTasks(completion: @escaping (Result<[ToDoModel], Error>) -> Void)
+    func fetchTasks(completion: @escaping (Result<[ToDoModel], Error>) -> Void)
+    func saveTasks(_ dtos: [ToDoDTO], completion: @escaping (Result<Void, Error>) -> Void)
+    func createTask(title: String, description: String?, completion: @escaping (Result<ToDoModel, Error>) -> Void)
+    func updateTask(_ task: ToDoModel, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void)
+    func deleteTask(_ task: ToDoModel, completion: @escaping (Result<Void, Error>) -> Void)
+    func searchTasks(query: String, completion: @escaping (Result<[ToDoModel], Error>) -> Void)
 }
 
 final class TaskRepository {
@@ -31,10 +31,10 @@ final class TaskRepository {
     }
     
     private let coreDataStack: CoreDataStackProtocol
-    private let taskAPI: TaskAPIProtocol
+    private let taskAPI: ToDoAPIProtocol
     
     init(coreDataStack: CoreDataStackProtocol = CoreDataStack.shared,
-         taskAPI: TaskAPIProtocol = TaskAPI()) {
+         taskAPI: ToDoAPIProtocol = ToDoAPI()) {
         self.coreDataStack = coreDataStack
         self.taskAPI = taskAPI
     }
@@ -45,7 +45,7 @@ final class TaskRepository {
 
 extension TaskRepository: TaskRepositoryProtocol{
     
-    func pullTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void) {
+    func pullTasks(completion: @escaping (Result<[ToDoModel], Error>) -> Void) {
         taskAPI.fetchTasks { [weak self] result in
             switch result {
             case .success(let dtos):
@@ -68,16 +68,16 @@ extension TaskRepository: TaskRepositoryProtocol{
         }
     }
     
-    func fetchTasks(completion: @escaping (Result<[TaskModel], Error>) -> Void) {
+    func fetchTasks(completion: @escaping (Result<[ToDoModel], Error>) -> Void) {
         coreDataStack.performBackgroundTask { context in
-            let request = TaskEntity.fetchRequest()
+            let request = ToDoEntity.fetchRequest()
             request.sortDescriptors = [NSSortDescriptor(
                 key: Constants.creationDateKey, ascending: false
             )]
             
             do {
                 let tasks = try context.fetch(request)
-                completion(.success(tasks.map(TaskModel.init)))
+                completion(.success(tasks.map(ToDoModel.init)))
             } catch {
                 completion(.failure(error))
             }
@@ -85,16 +85,16 @@ extension TaskRepository: TaskRepositoryProtocol{
     }
     
     func saveTasks(
-        _ dtos: [TaskDTO],
+        _ dtos: [ToDoDTO],
         completion: @escaping (Result<Void, Error>) -> Void
     ) {
         coreDataStack.performBackgroundTask { context in
             do {
                 for dto in dtos {
-                    let request = TaskEntity.fetchRequest()
+                    let request = ToDoEntity.fetchRequest()
                     request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, dto.id)
                     
-                    let task = try context.fetch(request).first ?? TaskEntity(context: context)
+                    let task = try context.fetch(request).first ?? ToDoEntity(context: context)
                     
                     task.creationDate = Date()
                     task.id = Int64(dto.id)
@@ -114,10 +114,10 @@ extension TaskRepository: TaskRepositoryProtocol{
     func createTask(
         title: String,
         description: String?,
-        completion: @escaping (Result<TaskModel, Error>) -> Void
+        completion: @escaping (Result<ToDoModel, Error>) -> Void
     ) {
         coreDataStack.performBackgroundTask { context in
-            let task = TaskEntity(context: context)
+            let task = ToDoEntity(context: context)
             task.id = Int64(Date().timeIntervalSince1970)
             task.title = title
             task.taskDescription = description
@@ -126,7 +126,7 @@ extension TaskRepository: TaskRepositoryProtocol{
             
             do {
                 try context.save()
-                completion(.success(TaskModel(task)))
+                completion(.success(ToDoModel(task)))
             } catch {
                 completion(.failure(error))
             }
@@ -134,7 +134,7 @@ extension TaskRepository: TaskRepositoryProtocol{
     }
     
     func updateTask(
-        _ task: TaskModel,
+        _ task: ToDoModel,
         title: String,
         description: String?,
         isCompleted: Bool,
@@ -142,10 +142,10 @@ extension TaskRepository: TaskRepositoryProtocol{
     ) {
         coreDataStack.performBackgroundTask { context in
             do {
-                let request = TaskEntity.fetchRequest()
+                let request = ToDoEntity.fetchRequest()
                 request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, task.id)
                 
-                let object = try context.fetch(request).first ?? TaskEntity(context: context)
+                let object = try context.fetch(request).first ?? ToDoEntity(context: context)
                 
                 object.title = title
                 object.taskDescription = description
@@ -160,16 +160,16 @@ extension TaskRepository: TaskRepositoryProtocol{
     }
     
     func deleteTask(
-        _ task: TaskModel,
+        _ task: ToDoModel,
         completion: @escaping (Result<Void, Error>
         ) -> Void
     ) {
         coreDataStack.performBackgroundTask { context in
             do {
-                let request = TaskEntity.fetchRequest()
+                let request = ToDoEntity.fetchRequest()
                 request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, task.id)
                 
-                let object = try context.fetch(request).first ?? TaskEntity(context: context)
+                let object = try context.fetch(request).first ?? ToDoEntity(context: context)
                 
                 context.delete(object)
                 
@@ -183,10 +183,10 @@ extension TaskRepository: TaskRepositoryProtocol{
     
     func searchTasks(
         query: String,
-        completion: @escaping (Result<[TaskModel], Error>) -> Void
+        completion: @escaping (Result<[ToDoModel], Error>) -> Void
     ) {
         coreDataStack.performBackgroundTask { context in
-            let request = TaskEntity.fetchRequest()
+            let request = ToDoEntity.fetchRequest()
             request.predicate = NSPredicate(
                 format: Constants.searchPredicateFormat,
                 query, query
@@ -197,7 +197,7 @@ extension TaskRepository: TaskRepositoryProtocol{
             
             do {
                 let tasks = try context.fetch(request)
-                completion(.success(tasks.map(TaskModel.init)))
+                completion(.success(tasks.map(ToDoModel.init)))
             } catch {
                 completion(.failure(error))
             }

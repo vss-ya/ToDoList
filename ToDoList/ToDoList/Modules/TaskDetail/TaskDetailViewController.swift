@@ -27,7 +27,7 @@ final class TaskDetailViewController: UIViewController {
 
 // MARK: - Setup
 
-extension TaskDetailViewController {
+private extension TaskDetailViewController {
     
     func setup() {
         setupUI()
@@ -42,7 +42,7 @@ extension TaskDetailViewController {
         updateDescriptionPlaceholder()
     }
     
-    private func setupUI() {
+    func setupUI() {
         navigationItem.largeTitleDisplayMode = .never
         setupStackView()
         setupTitleTextField()
@@ -100,11 +100,11 @@ extension TaskDetailViewController {
         ])
     }
     
-    @objc private func saveButtonTapped() {
+    @objc func saveButtonTapped() {
         presenter.didSaveTask(title: titleTextField.text ?? "", description: descriptionTextView.text)
     }
     
-    private func updateDescriptionPlaceholder() {
+    func updateDescriptionPlaceholder() {
         descriptionPlaceholderLabel.isHidden = !descriptionTextView.text.isEmpty
     }
     
@@ -114,7 +114,7 @@ extension TaskDetailViewController {
 
 extension TaskDetailViewController: TaskDetailViewProtocol {
     
-    func showTask(_ task: TaskModel) {
+    func showTask(_ task: ToDoModel) {
         titleTextField.text = task.title
         dateLabel.text = DateFormatterHelper.ddMMyyString(from: task.creationDate)
         descriptionTextView.text = task.taskDescription

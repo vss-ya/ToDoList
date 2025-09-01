@@ -13,7 +13,7 @@ final class TaskListPresenter {
     var interactor: TaskListInteractorProtocol
     var router: TaskListRouterProtocol
     
-    private var tasks: [TaskModel] = []
+    private var tasks: [ToDoModel] = []
     
     deinit {
         print("TaskListPresenter deinit")
@@ -42,20 +42,20 @@ extension TaskListPresenter: TaskListPresenterProtocol {
         interactor.searchTasks(query: query)
     }
     
-    func didTapEditTask(_ task: TaskModel) {
+    func didTapEditTask(_ task: ToDoModel) {
         router.navigateToTaskDetail(task)
     }
     
-    func didTapShareTask(_ task: TaskModel) {
+    func didTapShareTask(_ task: ToDoModel) {
         view?.showWhoShareWith(task)
     }
     
-    func didTapDeleteTask(_ task: TaskModel) {
+    func didTapDeleteTask(_ task: ToDoModel) {
         view?.showLoading()
         interactor.deleteTask(task)
     }
     
-    func didTapToggleCompletionTask(_ task: TaskModel) {
+    func didTapToggleCompletionTask(_ task: ToDoModel) {
         view?.showLoading()
         interactor.updateTaskCompletion(task, isCompleted: !task.isCompleted)
     }
@@ -64,7 +64,7 @@ extension TaskListPresenter: TaskListPresenterProtocol {
 
 extension TaskListPresenter: TaskListInteractorOutputProtocol {
     
-    func didFetchTasks(_ tasks: [TaskModel]) {
+    func didFetchTasks(_ tasks: [ToDoModel]) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.tasks = tasks

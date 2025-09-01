@@ -27,7 +27,7 @@ extension TaskDetailPresenter: TaskDetailPresenterProtocol {
     // MARK: - Constants
     
     private enum Constants {
-        static let validation = "TaskEntityNotFound"
+        static let validation = "ToDoEntityNotFound"
         static let validationCode = 400
         static let validationMessage = "Введите название задачи"
     }

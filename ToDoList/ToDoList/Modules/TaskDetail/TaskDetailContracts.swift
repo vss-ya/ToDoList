@@ -6,7 +6,7 @@
 //
 
 protocol TaskDetailViewProtocol: AnyObject {
-    func showTask(_ task: TaskModel)
+    func showTask(_ task: ToDoModel)
     func showError(_ error: Error)
 }
 
@@ -16,7 +16,7 @@ protocol TaskDetailPresenterProtocol: AnyObject {
 }
 
 protocol TaskDetailInteractorProtocol: AnyObject {
-    func fetchTask() -> TaskModel?
+    func fetchTask() -> ToDoModel?
     func saveTask(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void)
     func updateTask(title: String, description: String?, completion: @escaping (Result<Void, Error>) -> Void)
 }
