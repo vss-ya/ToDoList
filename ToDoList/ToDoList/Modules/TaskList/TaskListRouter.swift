@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 
 final class TaskListRouter: TaskListRouterProtocol {
+    
     weak var viewController: UIViewController?
     
     func navigateToTaskDetail(_ task: TaskModel?) {
@@ -25,4 +26,5 @@ final class TaskListRouter: TaskListRouterProtocol {
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         viewController?.present(alert, animated: true)
     }
+    
 }

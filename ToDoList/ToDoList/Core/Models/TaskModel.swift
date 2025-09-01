@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct TaskModel {
+public struct TaskModel: Encodable {
     
     let id: Int64
     let title: String
@@ -17,7 +17,7 @@ public struct TaskModel {
     
     init(_ entity: TaskEntity) {
         self.id = entity.id
-        self.title = "# \(entity.id)"
+        self.title = entity.title ?? "# \(entity.id)"
         self.taskDescription = entity.taskDescription
         self.isCompleted = entity.isCompleted
         self.creationDate = entity.creationDate ?? Date()

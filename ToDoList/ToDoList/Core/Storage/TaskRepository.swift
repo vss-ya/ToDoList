@@ -18,6 +18,7 @@ protocol TaskRepositoryProtocol {
 }
 
 final class TaskRepository: TaskRepositoryProtocol {
+    
     private let coreDataStack: CoreDataStackProtocol
     private let taskAPI: TaskAPIProtocol
     
@@ -58,7 +59,10 @@ final class TaskRepository: TaskRepositoryProtocol {
         }
     }
     
-    func saveTasks(_ dtos: [TaskDTO], completion: @escaping (Result<Void, Error>) -> Void) {
+    func saveTasks(
+        _ dtos: [TaskDTO],
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
         coreDataStack.performBackgroundTask { context in
             do {
                 for dto in dtos {
@@ -82,7 +86,11 @@ final class TaskRepository: TaskRepositoryProtocol {
         }
     }
     
-    func createTask(title: String, description: String?, completion: @escaping (Result<TaskModel, Error>) -> Void) {
+    func createTask(
+        title: String,
+        description: String?,
+        completion: @escaping (Result<TaskModel, Error>) -> Void
+    ) {
         coreDataStack.performBackgroundTask { context in
             let task = TaskEntity(context: context)
             task.id = Int64(Date().timeIntervalSince1970)
@@ -100,7 +108,13 @@ final class TaskRepository: TaskRepositoryProtocol {
         }
     }
     
-    func updateTask(_ task: TaskModel, title: String, description: String?, isCompleted: Bool, completion: @escaping (Result<Void, Error>) -> Void) {
+    func updateTask(
+        _ task: TaskModel,
+        title: String,
+        description: String?,
+        isCompleted: Bool,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
         coreDataStack.performBackgroundTask { context in
             do {
                 let request = TaskEntity.fetchRequest()
@@ -117,26 +131,14 @@ final class TaskRepository: TaskRepositoryProtocol {
             } catch {
                 completion(.failure(error))
             }
-            
-//            guard let object = try? context.existingObject(with: task.objectID) as? TaskEntity else {
-//                completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
-//                return
-//            }
-//            
-//            object.title = title
-//            object.taskDescription = description
-//            object.isCompleted = isCompleted
-//            
-//            do {
-//                try context.save()
-//                completion(.success(()))
-//            } catch {
-//                completion(.failure(error))
-//            }
         }
     }
     
-    func deleteTask(_ task: TaskModel, completion: @escaping (Result<Void, Error>) -> Void) {
+    func deleteTask(
+        _ task: TaskModel,
+        completion: @escaping (Result<Void, Error>
+        ) -> Void
+    ) {
         coreDataStack.performBackgroundTask { context in
             do {
                 let request = TaskEntity.fetchRequest()
@@ -151,24 +153,13 @@ final class TaskRepository: TaskRepositoryProtocol {
             } catch {
                 completion(.failure(error))
             }
-            
-//            guard let object = try? context.existingObject(with: task.objectID) else {
-//                completion(.failure(NSError(domain: "TaskEntityNotFound", code: 404)))
-//                return
-//            }
-//            
-//            context.delete(object)
-//            
-//            do {
-//                try context.save()
-//                completion(.success(()))
-//            } catch {
-//                completion(.failure(error))
-//            }
         }
     }
     
-    func searchTasks(query: String, completion: @escaping (Result<[TaskModel], Error>) -> Void) {
+    func searchTasks(
+        query: String,
+        completion: @escaping (Result<[TaskModel], Error>) -> Void
+    ) {
         coreDataStack.performBackgroundTask { context in
             let request = TaskEntity.fetchRequest()
             request.predicate = NSPredicate(
@@ -185,4 +176,5 @@ final class TaskRepository: TaskRepositoryProtocol {
             }
         }
     }
+    
 }

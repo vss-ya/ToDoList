@@ -8,6 +8,7 @@
 import UIKit
 
 final class TaskCell: UITableViewCell {
+    
     var onToggleCompletion: (() -> Void)?
     
     private let titleLabel: UILabel = {
@@ -138,4 +139,5 @@ final class TaskCell: UITableViewCell {
             descriptionLabel.textColor = UIColor(hex: "#F4F4F4")
         }
     }
+    
 }

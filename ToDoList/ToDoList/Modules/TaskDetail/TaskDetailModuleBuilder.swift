@@ -8,6 +8,7 @@
 import UIKit
 
 enum TaskDetailModuleBuilder {
+    
     static func build(task: TaskModel?) -> UIViewController {
         let viewController = TaskDetailViewController()
         let interactor = TaskDetailInteractor(task: task)
@@ -20,4 +21,5 @@ enum TaskDetailModuleBuilder {
         
         return viewController
     }
+    
 }

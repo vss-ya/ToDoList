@@ -9,11 +9,11 @@ import CoreData
 
 protocol CoreDataStackProtocol {
     var viewContext: NSManagedObjectContext { get }
-//    func saveContext()
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void)
 }
 
 final class CoreDataStack: CoreDataStackProtocol {
+    
     static let shared = CoreDataStack()
     
     private let persistentContainer: NSPersistentContainer
@@ -31,17 +31,8 @@ final class CoreDataStack: CoreDataStackProtocol {
         persistentContainer.viewContext
     }
     
-//    func saveContext() {
-//        if viewContext.hasChanges {
-//            do {
-//                try viewContext.save()
-//            } catch {
-//                print("Error saving context: \(error)")
-//            }
-//        }
-//    }
-    
     func performBackgroundTask(_ block: @escaping (NSManagedObjectContext) -> Void) {
         persistentContainer.performBackgroundTask(block)
     }
+    
 }

@@ -7,7 +7,8 @@
 
 import Foundation
 
-final class TaskListPresenter: TaskListPresenterProtocol {
+final class TaskListPresenter {
+    
     weak var view: TaskListViewProtocol?
     var interactor: TaskListInteractorProtocol
     var router: TaskListRouterProtocol
@@ -23,42 +24,53 @@ final class TaskListPresenter: TaskListPresenterProtocol {
         self.router = router
     }
     
+}
+
+extension TaskListPresenter: TaskListPresenterProtocol {
+    
     func viewDidLoad() {
         view?.showLoading()
         interactor.loadInitialDataIfNeeded()
-    }
-    
-    func didSelectTask(_ task: TaskModel) {
-        router.navigateToTaskDetail(task)
     }
     
     func didTapAddTask() {
         router.navigateToTaskDetail(nil)
     }
     
-    func didSearch(query: String) {
+    func didTapSearch(query: String) {
         view?.showLoading()
         interactor.searchTasks(query: query)
     }
     
-    func didDeleteTask(_ task: TaskModel) {
+    func didTapEditTask(_ task: TaskModel) {
+        router.navigateToTaskDetail(task)
+    }
+    
+    func didTapShareTask(_ task: TaskModel) {
+        view?.showWhoShareWith(task)
+    }
+    
+    func didTapDeleteTask(_ task: TaskModel) {
         view?.showLoading()
         interactor.deleteTask(task)
     }
     
-    func didToggleTaskCompletion(_ task: TaskModel) {
+    func didTapToggleCompletionTask(_ task: TaskModel) {
         view?.showLoading()
         interactor.updateTaskCompletion(task, isCompleted: !task.isCompleted)
     }
+    
 }
 
 extension TaskListPresenter: TaskListInteractorOutputProtocol {
+    
     func didFetchTasks(_ tasks: [TaskModel]) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.tasks = tasks
             self.view?.hideLoading()
             self.view?.showTasks(tasks)
+            self.view?.showTaskCompleted()
         }
     }
     
@@ -93,4 +105,5 @@ extension TaskListPresenter: TaskListInteractorOutputProtocol {
             router.showError(error)
         }
     }
+    
 }

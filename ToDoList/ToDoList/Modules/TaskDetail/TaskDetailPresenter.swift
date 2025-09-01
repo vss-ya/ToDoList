@@ -8,6 +8,7 @@
 import Foundation
 
 final class TaskDetailPresenter: TaskDetailPresenterProtocol {
+    
     weak var view: TaskDetailViewProtocol?
     var interactor: TaskDetailInteractorProtocol
     var router: TaskDetailRouterProtocol
@@ -30,11 +31,13 @@ final class TaskDetailPresenter: TaskDetailPresenterProtocol {
         }
         
         let completion: (Result<Void, Error>) -> Void = { [weak self] result in
-            switch result {
-            case .success:
-                self?.router.didFinish()
-            case .failure(let error):
-                self?.router.showError(error)
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self?.router.didFinish()
+                case .failure(let error):
+                    self?.router.showError(error)
+                }
             }
         }
         
@@ -44,4 +47,5 @@ final class TaskDetailPresenter: TaskDetailPresenterProtocol {
             interactor.saveTask(title: title, description: description, completion: completion)
         }
     }
+    
 }

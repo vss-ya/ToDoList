@@ -9,6 +9,8 @@ import Foundation
 
 protocol TaskListViewProtocol: AnyObject {
     func showTasks(_ tasks: [TaskModel])
+    func showTaskCompleted()
+    func showWhoShareWith(_ task: TaskModel)
     func showError(_ error: Error)
     func showLoading()
     func hideLoading()
@@ -16,11 +18,12 @@ protocol TaskListViewProtocol: AnyObject {
 
 protocol TaskListPresenterProtocol: AnyObject {
     func viewDidLoad()
-    func didSelectTask(_ task: TaskModel)
     func didTapAddTask()
-    func didSearch(query: String)
-    func didDeleteTask(_ task: TaskModel)
-    func didToggleTaskCompletion(_ task: TaskModel)
+    func didTapSearch(query: String)
+    func didTapEditTask(_ task: TaskModel)
+    func didTapShareTask(_ task: TaskModel)
+    func didTapDeleteTask(_ task: TaskModel)
+    func didTapToggleCompletionTask(_ task: TaskModel)
 }
 
 protocol TaskListInteractorProtocol: AnyObject {

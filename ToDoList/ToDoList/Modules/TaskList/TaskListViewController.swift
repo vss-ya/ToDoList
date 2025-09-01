@@ -8,6 +8,7 @@
 import UIKit
 
 final class TaskListViewController: UIViewController {
+    
     var presenter: TaskListPresenterProtocol!
     
     private let tableView = UITableView()
@@ -24,12 +25,31 @@ final class TaskListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        setup()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
         presenter.viewDidLoad()
     }
     
+}
+
+extension TaskListViewController {
+    
+    func setup() {
+        setupUI()
+        setupConstraints()
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(addButtonTapped)
+        )
+    }
+    
     private func setupUI() {
-        title = "Задачи"
+        title = String.taskTitle
+        navigationController?.navigationBar.prefersLargeTitles = true
         
         setupSearchBar()
         setupTableView()
@@ -41,25 +61,7 @@ final class TaskListViewController: UIViewController {
         searchBar.delegate = self
         searchBar.placeholder = "Search"
         searchBar.searchBarStyle = .minimal
-        
-//        searchBar.searchTextField.backgroundColor = UIColor(hex: "#272729")
-//        searchBar.searchTextField.leftView?.tintColor = .lightGray
-//        searchBar.searchTextField.rightView?.tintColor = .lightGray
-//        searchBar.searchTextField.textColor = .white
-//        searchBar.searchTextField.attributedPlaceholder = NSAttributedString(
-//            string: searchBar.placeholder ?? "",
-//            attributes: [
-//                .foregroundColor: UIColor.lightGray
-//            ]
-//        )
-        
         view.addSubview(searchBar)
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
-        ])
     }
     
     private func setupTableView() {
@@ -68,17 +70,65 @@ final class TaskListViewController: UIViewController {
         tableView.register(TaskCell.self, forCellReuseIdentifier: "TaskCell")
         tableView.separatorInset = .init(top: 0, left: 20, bottom: 0, right: 20)
         view.addSubview(tableView)
+    }
+    
+    private func setupActivityIndicator() {
+        view.addSubview(activityIndicator)
+    }
+    
+    private func setupBottomView() {
+        selectedTasksLabel.text = "0 Задач"
+        bottomView.backgroundColor = UIColor(hex: "#272729")
+        
+        bottomView.translatesAutoresizingMaskIntoConstraints = false
+        selectedTasksLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(bottomView)
+        bottomView.addSubview(selectedTasksLabel)
+        bottomView.addSubview(editButton)
+        
+        selectedTasksLabel.font = .systemFont(ofSize: 11, weight: .regular)
+        selectedTasksLabel.textColor = .white
+        
+        let button = editButton
+        button.setImage(
+            UIImage(systemName: "checkmark.circle"),
+            for: .normal
+        )
+        
+        var buttonConfiguration = UIButton.Configuration.plain()
+        buttonConfiguration.imagePadding = .zero
+        buttonConfiguration.baseBackgroundColor = .clear
+        button.configuration = buttonConfiguration
+    }
+    
+    func setupConstraints() {
+        setupSearchBarConstraints()
+        setupTableViewConstraints()
+        setupActivityIndicatorConstraints()
+        setupBottomViewConstraints()
+    }
+    
+    func setupSearchBarConstraints() {
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12)
+        ])
+    }
+    
+    func setupTableViewConstraints() {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: bottomView.topAnchor)
         ])
     }
     
-    private func setupActivityIndicator() {
-        view.addSubview(activityIndicator)
+    func setupActivityIndicatorConstraints() {
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -86,32 +136,8 @@ final class TaskListViewController: UIViewController {
         ])
     }
     
-    private func setupBottomView() {
-        selectedTasksLabel.text = "7 Задач"
-        bottomView.backgroundColor = UIColor(hex: "#272729")
-        
-        view.addSubview(bottomView)
-        bottomView.translatesAutoresizingMaskIntoConstraints = false
-        bottomView.addSubview(selectedTasksLabel)
-        selectedTasksLabel.translatesAutoresizingMaskIntoConstraints = false
-        bottomView.addSubview(editButton)
+    func setupBottomViewConstraints() {
         editButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        selectedTasksLabel.font = .systemFont(ofSize: 11, weight: .regular)
-        selectedTasksLabel.textColor = .white
-        
-        let button = editButton
-        button.setImage(
-            UIImage(systemName: "square.and.pencil"),
-            for: .normal
-        )
-        
-//        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 22, weight: .regular)
-        var buttonConfiguration = UIButton.Configuration.plain()
-        buttonConfiguration.imagePadding = .zero
-        buttonConfiguration.baseBackgroundColor = .clear
-        button.configuration = buttonConfiguration
-        
         NSLayoutConstraint.activate([
             bottomView.heightAnchor.constraint(equalToConstant: 83),
             bottomView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
@@ -129,12 +155,27 @@ final class TaskListViewController: UIViewController {
     @objc private func addButtonTapped() {
         presenter.didTapAddTask()
     }
+    
 }
 
+// MARK: - TaskListViewProtocol
+
 extension TaskListViewController: TaskListViewProtocol {
+    
     func showTasks(_ tasks: [TaskModel]) {
         self.tasks = tasks
         tableView.reloadData()
+    }
+    
+    func showTaskCompleted() {
+        selectedTasksLabel.text = String(
+            format: String.numberOfCompletedTasksFormat,
+            tasks.filter(\.isCompleted).count
+        )
+    }
+    
+    func showWhoShareWith(_ task: TaskModel) {
+        shareTask(task)
     }
     
     func showError(_ error: Error) {
@@ -154,56 +195,162 @@ extension TaskListViewController: TaskListViewProtocol {
     func hideLoading() {
         activityIndicator.stopAnimating()
     }
+    
 }
 
-extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+// MARK: - UITableViewDataSource
+
+extension TaskListViewController: UITableViewDataSource {
+    
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
         tasks.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TaskCell", for: indexPath) as! TaskCell
-        let task = tasks[indexPath.row]
-        cell.configure(with: task)
-        cell.onToggleCompletion = { [weak self] in
-            self?.presenter.didToggleTaskCompletion(task)
-        }
-        return cell
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+        return configureCellForRowAt(indexPath)
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: false)
-        presenter.didSelectTask(tasks[indexPath.row])
-    }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+    func tableView(
+        _ tableView: UITableView,
+        commit editingStyle: UITableViewCell.EditingStyle,
+        forRowAt indexPath: IndexPath)
+    {
         if editingStyle == .delete {
-            presenter.didDeleteTask(tasks[indexPath.row])
+            presenter.didTapDeleteTask(tasks[indexPath.row])
         }
+    }
+    
+}
+
+// MARK: - UITableViewDelegate
+
+extension TaskListViewController: UITableViewDelegate {
+    
+    func tableView(
+        _ tableView: UITableView,
+        didSelectRowAt indexPath: IndexPath
+    ) {
+        tableView.deselectRow(at: indexPath, animated: false)
+        presenter.didTapEditTask(tasks[indexPath.row])
     }
     
     func tableView(
         _ tableView: UITableView,
         contextMenuConfigurationForRowAt indexPath:
         IndexPath, point: CGPoint
-    ) -> UIContextMenuConfiguration?
-    {
+    ) -> UIContextMenuConfiguration? {
+        menuForRowAt(indexPath, point: point)
+    }
+    
+    func tableView(
+        _ tableView: UITableView,
+        previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+    )-> UITargetedPreview? {
+        return preview(
+            for: tableView,
+            contextMenuWithConfiguration: configuration
+        )
+    }
+
+    func tableView(
+        _ tableView: UITableView,
+        previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+    ) -> UITargetedPreview? {
+        return preview(
+            for: tableView,
+            contextMenuWithConfiguration: configuration
+        )
+    }
+    
+}
+
+// MARK: - UISearchBarDelegate
+
+extension TaskListViewController: UISearchBarDelegate {
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        presenter.didTapSearch(query: searchText)
+    }
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()
+    }
+    
+}
+
+// MARK: - Helpers
+
+extension TaskListViewController {
+    
+    private func shareTask(_ task: TaskModel) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+
+        do {
+            let jsonData = try encoder.encode(task)
+            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+                print("Error share task")
+                return
+            }
+            let itemProvider = NSItemProvider(
+                item: jsonString as NSString,
+                typeIdentifier: "public.utf8-plain-text"
+            )
+            let configuration = UIActivityItemsConfiguration(itemProviders: [itemProvider])
+            let shareSheet = UIActivityViewController(activityItemsConfiguration: configuration)
+            present(shareSheet, animated:true) {}
+        } catch {
+            print("Error encoding JSON: \(error)")
+        }
+    }
+    
+    private func configureCellForRowAt(
+        _ indexPath: IndexPath
+    ) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "TaskCell",
+            for: indexPath
+        ) as! TaskCell
+        let task = tasks[indexPath.row]
+        cell.configure(with: task)
+        cell.onToggleCompletion = { [weak self] in
+            self?.presenter.didTapToggleCompletionTask(task)
+        }
+        return cell
+    }
+    
+    private func menuForRowAt(
+        _ indexPath: IndexPath,
+        point: CGPoint
+    ) -> UIContextMenuConfiguration? {
         let menuActions = UIMenu(title: "", children: [
             UIAction(
-                title: "Редактировать",
+                title: String.editTitle,
                 image: UIImage.menuEdit
-            ) { _ in
+            ) { [weak self] _ in
+                guard let self else { return }
+                presenter.didTapEditTask(tasks[indexPath.row])
             },
             UIAction(
-                title: "Поделиться",
+                title: String.shareTitle,
                 image: UIImage.menuShare
-            ) { _ in
+            ) { [weak self] _ in
+                guard let self else { return }
+                presenter.didTapShareTask(tasks[indexPath.row])
             },
             UIAction(
-                title: "Удалить",
+                title: String.deleteTitle,
                 image: UIImage.menuDelete,
                 attributes: .destructive
-            ) { _ in
+            ) { [weak self] _ in
+                guard let self else { return }
+                presenter.didTapDeleteTask(tasks[indexPath.row])
             }
         ])
         
@@ -218,38 +365,28 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         return menuConfiguration
     }
     
-    func tableView(
-        _ tableView: UITableView,
-        previewForHighlightingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
-    )-> UITargetedPreview? {
-          guard let identifier = configuration.identifier as? String,
-                let index = Int(identifier),
-                let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0))
-          else {
-            return nil
-        }
-        
-        return preview(for: cell)
-    }
-
-    func tableView(
-        _ tableView: UITableView,
-        previewForDismissingContextMenuWithConfiguration configuration: UIContextMenuConfiguration
+    private func preview(
+        for tableView: UITableView,
+        contextMenuWithConfiguration configuration: UIContextMenuConfiguration
     ) -> UITargetedPreview? {
         guard let identifier = configuration.identifier as? String,
               let index = Int(identifier),
-              let cell = tableView.cellForRow(at: IndexPath(row: index, section: 0))
-          else {
+              let cell = tableView.cellForRow(
+                at: IndexPath(row: index, section: 0)
+              ) else
+        {
             return nil
         }
         
         return preview(for: cell)
     }
-
-    fileprivate func preview(for cell: UITableViewCell) -> UITargetedPreview? {
+    
+    private func preview(for cell: UITableViewCell) -> UITargetedPreview? {
         guard
             let targetCell = cell as? TaskCell,
-            let snapshot = targetCell.contentView.snapshotView(afterScreenUpdates: false) else
+            let snapshot = targetCell.contentView.snapshotView(
+                afterScreenUpdates: false
+            ) else
         {
             return nil
         }
@@ -274,14 +411,5 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
             target: previewTarget
         )
     }
-}
-
-extension TaskListViewController: UISearchBarDelegate {
-    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        presenter.didSearch(query: searchText)
-    }
     
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder()
-    }
 }

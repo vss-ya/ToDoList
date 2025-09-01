@@ -8,6 +8,7 @@
 import Foundation
 
 final class TaskListInteractor: TaskListInteractorProtocol {
+    
     private let taskRepository: TaskRepositoryProtocol
     private let userDefaults: UserDefaults
     weak var presenter: TaskListInteractorOutputProtocol?
@@ -72,18 +73,29 @@ final class TaskListInteractor: TaskListInteractorProtocol {
     }
     
     func loadInitialDataIfNeeded() {
-//        let hasLaunchedBefore = userDefaults.bool(forKey: "hasLaunchedBefore")
-//        guard !hasLaunchedBefore else { return }
-//        
-//        userDefaults.set(true, forKey: "hasLaunchedBefore")
-        
-        taskRepository.pullTasks { [weak self] result in
-            switch result {
-            case .success(let tasks):
-                self?.presenter?.didFetchTasks(tasks)
-            case .failure(let error):
-                self?.presenter?.didFailFetchingTasks(error)
+        let hasLoadedOnLaunch  = userDefaults.bool(forKey: "hasLoadedOnLaunch")
+        if !hasLoadedOnLaunch {
+            taskRepository.pullTasks { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let tasks):
+                    userDefaults.set(true, forKey: "hasLoadedOnLaunch")
+                    presenter?.didFetchTasks(tasks)
+                case .failure(let error):
+                    presenter?.didFailFetchingTasks(error)
+                }
+            }
+        } else {
+            taskRepository.fetchTasks { [weak self] result in
+                guard let self else { return }
+                switch result {
+                case .success(let tasks):
+                    presenter?.didFetchTasks(tasks)
+                case .failure(let error):
+                    presenter?.didFailFetchingTasks(error)
+                }
             }
         }
     }
+    
 }

@@ -14,15 +14,18 @@ protocol APIClientProtocol {
 }
 
 final class APIClient: APIClientProtocol {
+    
     private let session: URLSession
     
     init(session: URLSession = .shared) {
         self.session = session
     }
     
-    func request<T: Decodable>(_ endpoint: URL,
-                             method: HTTPMethod = .get,
-                             completion: @escaping (Result<T, Error>) -> Void) {
+    func request<T: Decodable>(
+        _ endpoint: URL,
+        method: HTTPMethod = .get,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) {
         var request = URLRequest(url: endpoint)
         request.httpMethod = method.rawValue
         
@@ -53,4 +56,5 @@ final class APIClient: APIClientProtocol {
         
         task.resume()
     }
+    
 }

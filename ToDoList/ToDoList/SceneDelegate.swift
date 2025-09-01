@@ -11,13 +11,12 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
 
-    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
-        guard let scene = (scene as? UIWindowScene) else { return }
-        
-        window = UIWindow(windowScene: scene)
-        window?.overrideUserInterfaceStyle = .dark
-        window?.makeKeyAndVisible()
-        window?.rootViewController = TaskListModuleBuilder.build()
+    func scene(
+        _ scene: UIScene,
+        willConnectTo session: UISceneSession,
+        options connectionOptions: UIScene.ConnectionOptions
+    ) {
+        setup(scene)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {}
@@ -28,3 +27,30 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 }
 
+// MARK: - Setup & Appearance
+
+extension SceneDelegate {
+    
+    func setup(_ scene: UIScene) {
+        setupAppearance()
+        
+        guard let scene = (scene as? UIWindowScene) else { return }
+        
+        window = UIWindow(windowScene: scene)
+        window?.overrideUserInterfaceStyle = .dark
+        window?.makeKeyAndVisible()
+        window?.rootViewController = TaskListModuleBuilder.build()
+    }
+    
+    func setupAppearance() {
+        UINavigationBar.appearance().layoutMargins.left = 20
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+        UINavigationBar.appearance().tintColor = UIColor(hex: "#FED702")
+        UIButton.appearance().tintColor = UIColor(hex: "#FED702")
+        UITableView.appearance().separatorColor = UIColor(hex: "#4D555E")
+        if let contextMenuViewClass = NSClassFromString("_UIContextMenuView") as? UIView.Type {
+            contextMenuViewClass.appearance().overrideUserInterfaceStyle = .light
+        }
+    }
+    
+}

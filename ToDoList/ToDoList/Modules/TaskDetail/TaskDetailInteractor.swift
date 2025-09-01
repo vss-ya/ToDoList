@@ -8,6 +8,7 @@
 import Foundation
 
 final class TaskDetailInteractor: TaskDetailInteractorProtocol {
+    
     private let task: TaskModel?
     private let taskRepository: TaskRepositoryProtocol
     
@@ -51,4 +52,5 @@ final class TaskDetailInteractor: TaskDetailInteractorProtocol {
             }
         }
     }
+    
 }
