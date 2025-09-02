@@ -306,7 +306,9 @@ private extension TaskListViewController {
 
         do {
             let jsonData = try encoder.encode(task)
-            guard let jsonString = String(data: jsonData, encoding: .utf8) else {
+            guard
+                let jsonString = String(data: jsonData, encoding: .utf8)
+            else {
                 print(Constants.shareTaskError)
                 return
             }
@@ -381,12 +383,13 @@ private extension TaskListViewController {
         for tableView: UITableView,
         contextMenuWithConfiguration configuration: UIContextMenuConfiguration
     ) -> UITargetedPreview? {
-        guard let identifier = configuration.identifier as? String,
-              let index = Int(identifier),
-              let cell = tableView.cellForRow(
+        guard
+            let identifier = configuration.identifier as? String,
+            let index = Int(identifier),
+            let cell = tableView.cellForRow(
                 at: IndexPath(row: index, section: 0)
-              ) else
-        {
+            )
+        else {
             return nil
         }
         
@@ -398,8 +401,8 @@ private extension TaskListViewController {
             let targetCell = cell as? TaskCell,
             let snapshot = targetCell.contentView.snapshotView(
                 afterScreenUpdates: false
-            ) else
-        {
+            )
+        else {
             return nil
         }
         

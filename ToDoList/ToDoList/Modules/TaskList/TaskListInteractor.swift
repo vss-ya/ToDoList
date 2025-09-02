@@ -90,23 +90,21 @@ extension TaskListInteractor: TaskListInteractorProtocol {
         let hasLoadedOnLaunch  = userDefaults.bool(forKey: Constants.hasLoadedOnLaunchKey)
         if !hasLoadedOnLaunch {
             taskRepository.pullTasks { [weak self] result in
-                guard let self else { return }
                 switch result {
                 case .success(let tasks):
-                    userDefaults.set(true, forKey: Constants.hasLoadedOnLaunchKey)
-                    presenter?.didFetchTasks(tasks)
+                    self?.userDefaults.set(true, forKey: Constants.hasLoadedOnLaunchKey)
+                    self?.presenter?.didFetchTasks(tasks)
                 case .failure(let error):
-                    presenter?.didFailFetchingTasks(error)
+                    self?.presenter?.didFailFetchingTasks(error)
                 }
             }
         } else {
             taskRepository.fetchTasks { [weak self] result in
-                guard let self else { return }
                 switch result {
                 case .success(let tasks):
-                    presenter?.didFetchTasks(tasks)
+                    self?.presenter?.didFetchTasks(tasks)
                 case .failure(let error):
-                    presenter?.didFailFetchingTasks(error)
+                    self?.presenter?.didFailFetchingTasks(error)
                 }
             }
         }

@@ -68,9 +68,9 @@ extension TaskListPresenter: TaskListInteractorOutputProtocol {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             self.tasks = tasks
-            self.view?.hideLoading()
-            self.view?.showTasks(tasks)
-            self.view?.showTaskCompleted()
+            view?.hideLoading()
+            view?.showTasks(tasks)
+            view?.showTaskCompleted()
         }
     }
     
