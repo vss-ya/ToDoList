@@ -15,6 +15,20 @@ struct ToDoModel: Encodable {
     let isCompleted: Bool
     let creationDate: Date
     
+    init(
+        id: Int64 = 0,
+        title: String = "",
+        taskDescription: String? = nil,
+        isCompleted: Bool = false,
+        creationDate: Date = Date()
+    ) {
+        self.id = id
+        self.title = title
+        self.taskDescription = taskDescription
+        self.isCompleted = isCompleted
+        self.creationDate = creationDate
+    }
+    
     init(_ entity: ToDoEntity) {
         self.id = entity.id
         self.title = entity.title ?? "# \(entity.id)"
