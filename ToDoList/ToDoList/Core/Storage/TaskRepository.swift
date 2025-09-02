@@ -24,18 +24,16 @@ final class TaskRepository {
     private enum Constants {
         static let failedToSaveInitialDataFormat = "Failed to save initial data: %@"
         static let failedToFetchInitialDataFormat = "Failed to fetch initial data: %@"
-        
-        static let creationDateKey = "creationDate"
-        static let idEqPredicateFormat = "id == %i"
-        static let searchPredicateFormat: String = "title CONTAINS[cd] %@ OR taskDescription CONTAINS[cd] %@"
     }
     
-    private let coreDataStack: CoreDataStackProtocol
+    private let storage: Storage
     private let taskAPI: ToDoAPIProtocol
     
-    init(coreDataStack: CoreDataStackProtocol = CoreDataStack.shared,
-         taskAPI: ToDoAPIProtocol = ToDoAPI()) {
-        self.coreDataStack = coreDataStack
+    init(
+        storage: Storage,
+        taskAPI: ToDoAPIProtocol = ToDoAPI())
+    {
+        self.storage = storage
         self.taskAPI = taskAPI
     }
     
@@ -69,46 +67,14 @@ extension TaskRepository: TaskRepositoryProtocol{
     }
     
     func fetchTasks(completion: @escaping (Result<[ToDoModel], Error>) -> Void) {
-        coreDataStack.performBackgroundTask { context in
-            let request = ToDoEntity.fetchRequest()
-            request.sortDescriptors = [NSSortDescriptor(
-                key: Constants.creationDateKey, ascending: false
-            )]
-            
-            do {
-                let tasks = try context.fetch(request)
-                completion(.success(tasks.map(ToDoModel.init)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        storage.fetchTasks(completion: completion)
     }
     
     func saveTasks(
         _ dtos: [ToDoDTO],
         completion: @escaping (Result<Void, Error>) -> Void
     ) {
-        coreDataStack.performBackgroundTask { context in
-            do {
-                for dto in dtos {
-                    let request = ToDoEntity.fetchRequest()
-                    request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, dto.id)
-                    
-                    let task = try context.fetch(request).first ?? ToDoEntity(context: context)
-                    
-                    task.creationDate = Date()
-                    task.id = Int64(dto.id)
-                    task.isCompleted = dto.completed
-                    task.taskDescription = dto.todo
-                    task.title = "# \(dto.id)"
-                }
-                
-                try context.save()
-                completion(.success(()))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        storage.saveTasks(dtos, completion: completion)
     }
     
     func createTask(
@@ -116,21 +82,11 @@ extension TaskRepository: TaskRepositoryProtocol{
         description: String?,
         completion: @escaping (Result<ToDoModel, Error>) -> Void
     ) {
-        coreDataStack.performBackgroundTask { context in
-            let task = ToDoEntity(context: context)
-            task.id = Int64(Date().timeIntervalSince1970)
-            task.title = title
-            task.taskDescription = description
-            task.isCompleted = false
-            task.creationDate = Date()
-            
-            do {
-                try context.save()
-                completion(.success(ToDoModel(task)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        storage.createTask(
+            title: title,
+            description: description,
+            completion: completion
+        )
     }
     
     func updateTask(
@@ -140,23 +96,13 @@ extension TaskRepository: TaskRepositoryProtocol{
         isCompleted: Bool,
         completion: @escaping (Result<Void, Error>) -> Void
     ) {
-        coreDataStack.performBackgroundTask { context in
-            do {
-                let request = ToDoEntity.fetchRequest()
-                request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, task.id)
-                
-                let object = try context.fetch(request).first ?? ToDoEntity(context: context)
-                
-                object.title = title
-                object.taskDescription = description
-                object.isCompleted = isCompleted
-                
-                try context.save()
-                completion(.success(()))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        storage.updateTask(
+            task,
+            title: title,
+            description: description,
+            isCompleted: isCompleted,
+            completion: completion
+        )
     }
     
     func deleteTask(
@@ -164,44 +110,14 @@ extension TaskRepository: TaskRepositoryProtocol{
         completion: @escaping (Result<Void, Error>
         ) -> Void
     ) {
-        coreDataStack.performBackgroundTask { context in
-            do {
-                let request = ToDoEntity.fetchRequest()
-                request.predicate = NSPredicate(format: Constants.idEqPredicateFormat, task.id)
-                
-                let object = try context.fetch(request).first ?? ToDoEntity(context: context)
-                
-                context.delete(object)
-                
-                try context.save()
-                completion(.success(()))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        storage.deleteTask(task, completion: completion)
     }
     
     func searchTasks(
         query: String,
         completion: @escaping (Result<[ToDoModel], Error>) -> Void
     ) {
-        coreDataStack.performBackgroundTask { context in
-            let request = ToDoEntity.fetchRequest()
-            request.predicate = NSPredicate(
-                format: Constants.searchPredicateFormat,
-                query, query
-            )
-            request.sortDescriptors = [NSSortDescriptor(
-                key: Constants.creationDateKey, ascending: false
-            )]
-            
-            do {
-                let tasks = try context.fetch(request)
-                completion(.success(tasks.map(ToDoModel.init)))
-            } catch {
-                completion(.failure(error))
-            }
-        }
+        storage.searchTasks(query: query, completion: completion)
     }
     
 }

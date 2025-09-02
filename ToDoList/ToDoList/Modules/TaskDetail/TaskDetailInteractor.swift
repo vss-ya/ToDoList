@@ -12,7 +12,10 @@ final class TaskDetailInteractor {
     private let task: ToDoModel?
     private let taskRepository: TaskRepositoryProtocol
     
-    init(task: ToDoModel?, taskRepository: TaskRepositoryProtocol = TaskRepository()) {
+    init(
+        task: ToDoModel?,
+        taskRepository: TaskRepositoryProtocol = TaskRepository(storage: CoreDataStack.shared))
+    {
         self.task = task
         self.taskRepository = taskRepository
     }

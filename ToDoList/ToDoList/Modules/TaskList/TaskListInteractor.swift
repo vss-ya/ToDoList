@@ -21,8 +21,10 @@ final class TaskListInteractor {
     private let userDefaults: UserDefaults
     weak var presenter: TaskListInteractorOutputProtocol?
     
-    init(taskRepository: TaskRepositoryProtocol = TaskRepository(),
-         userDefaults: UserDefaults = .standard) {
+    init(
+        taskRepository: TaskRepositoryProtocol = TaskRepository(storage: CoreDataStack.shared),
+        userDefaults: UserDefaults = .standard
+    ) {
         self.taskRepository = taskRepository
         self.userDefaults = userDefaults
     }
